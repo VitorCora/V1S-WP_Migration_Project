@@ -93,7 +93,8 @@ if ($apexOne -ne $null) {
                     
                     # Check the exit code of the process
                     if ($process.ExitCode -eq 0) {
-                        Write-Host "Command executed successfully."
+                        Write-Host "Apex One removed successfully."
+                        $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
                     } else {
                         Write-Host "Command failed with exit code $($process.ExitCode)."
                     }
@@ -188,7 +189,8 @@ if ($deepSecurity -ne $null) {
                     
                     # Check the exit code of the process
                     if ($process.ExitCode -eq 0) {
-                        Write-Host "Command executed successfully."
+                        Write-Host "Workload Security removed successfully."
+                        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
                     } else {
                         Write-Host "Command failed with exit code $($process.ExitCode)."
                     }
