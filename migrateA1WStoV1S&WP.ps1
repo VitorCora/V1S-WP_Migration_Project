@@ -2,6 +2,11 @@
 
 ## This code needs to be ran as Adminstrator, I will include a fail safe to break the code in the case of it starting with less privileges 
 
+if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
+    Write-Host "Please run this script as an Administrator."; 
+    exit 
+}
+
 # Define variables
 
 # Define the URL from which to download the Basecamp agent
@@ -20,131 +25,192 @@ $downloadPathSCUTA1 = "$env:TEMP\SCUTA1.zip"
 
 $downloadPathSCUTWS = "$env:TEMP\SCUTWS.zip"
 
-# Check if Apex One is installed
+# Start Check if Apex One is installed
 
-# Specify the name of the program
-$programName = "Trend Micro Apex One Security Agent"
+#1
 
-# Create a new instance of the WMI searcher
-$wmiSearcher = New-Object -Type System.Management.ManagementObjectSearcher -ArgumentList "SELECT * FROM Win32_Product"
+# Search for Trend Micro Deep Security Agent
+$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
 
-# Get the list of installed software
-$installedSoftware = $wmiSearcher.Get()
+if ($apexOne -ne $null) {
+    Write-Host "Trend Micro Apex one/Office Scan Agent found."
 
-# Check if the program is found
-$found = $false
-foreach ($software in $installedSoftware) {
-    if ($software.Name -like "*$programName*") {
-        $found = $true
-        break
-    }
-}
+    # Uninstall Trend Micro Apex One Security Agent
+    $uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Apex One Security Agent*" } | Select-Object -ExpandProperty UninstallString
+    if ($uninstallString -ne $null) {
+        Write-Host "Uninstalling Trend Micro Apex One Security Agent..."
+        Start-Process -FilePath $uninstallString -Wait
+        Write-Host "Trend Micro Apex One Security Agent has been uninstalled."
+    } else {
+        Write-Host "Failed to find uninstall string for Trend Micro Apex One Security Agent."
 
-# Output the result
-if ($found) {
-    Write-Host "$programName is installed.
 
-    Write-Host "Initiating the unistallation process of the $programName, using the SCUT tool"
-
-    # Create a WebClient object
-    $webClient = New-Object System.Net.WebClient
+        Write-Host "Initiating the unistallation process of the Apex One, using the SCUT tool"
     
-    # Download the program using the DownloadFile method (compatible with PowerShell v1)
-    $webClient.DownloadFile($urlSCUTA1, $downloadPathSCUTA1)
-    
-    # Check if the file was downloaded successfully
-    if (Test-Path $downloadPathSCUTA1) {
-        Write-Host "Program SCUT for Apex One downloaded successfully."
-        Write-Host "Running the program SCUT for Apex One ..."
-    
-        # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-        $shell = New-Object -ComObject Shell.Application
+        # Create a WebClient object
+        $webClient = New-Object System.Net.WebClient
         
-        # Define the destination folder path
-        $destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
+        # Download the program using the DownloadFile method (compatible with PowerShell v1)
+        $webClient.DownloadFile($urlSCUTA1, $downloadPathSCUTA1)
         
-        # Create the destination folder if it doesn't exist
-        if (-not (Test-Path $destinationFolderPath)) {
-            New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
-        }
+        # Check if the file was downloaded successfully
+        if (Test-Path $downloadPathSCUTA1) {
+            Write-Host "Program SCUT for Apex One downloaded successfully."
+            Write-Host "Running the program SCUT for Apex One ..."
         
-        # Get the zip folder and destination folder objects
-        $zipFolder = $shell.NameSpace($downloadPathSCUTA1)
-        $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTA1)
-        
-        # Check if the destination folder object is not null
-        if ($destinationFolderSCUTA1 -ne $null) {
-            # Copy the items from the zip folder to the destination folder
-            $destinationFolder.CopyHere($zipFolder.Items(), 16)
-    
-            # Run SCUT program to remove A1
-            $programPathSCUTA1 = "$env:TEMP\SCUTA1\A1\SCUT.exe"
-
-            #Build the command
-            $command = "$programPathSCUTA1 -noinstall -dbg"
+            # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+            $shell = New-Object -ComObject Shell.Application
             
-            # Check if the program exists in the destination folder
-            if (Test-Path $programPathSCUTA1) {
-                Write-Host "Running SCUT Apex One located at: $programPathSCUTA1"
-                Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+            # Define the destination folder path
+            $destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
+            
+            # Create the destination folder if it doesn't exist
+            if (-not (Test-Path $destinationFolderPath)) {
+                New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
+            }
+            
+            # Get the zip folder and destination folder objects
+            $zipFolder = $shell.NameSpace($downloadPathSCUTA1)
+            $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTA1)
+            
+            # Check if the destination folder object is not null
+            if ($destinationFolderSCUTA1 -ne $null) {
+                # Copy the items from the zip folder to the destination folder
+                $destinationFolder.CopyHere($zipFolder.Items(), 16)
+        
+                # Run SCUT program to remove A1
+                $programPathSCUTA1 = "$env:TEMP\SCUTA1\A1\SCUT.exe"
+    
+                #Build the command
+                $command = "$programPathSCUTA1 -noinstall -dbg"
+                
+                # Check if the program exists in the destination folder
+                if (Test-Path $programPathSCUTA1) {
+                    Write-Host "Running SCUT Apex One located at: $programPathSCUTA1"
+                    Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+                } else {
+                    Write-Host "Error: Program not found at $programPathSCUTA1"
+                }
             } else {
-                Write-Host "Error: Program not found at $programPathSCUTA1"
+                Write-Host "Error: Destination folder not accessible."
             }
         } else {
-            Write-Host "Error: Destination folder not accessible."
+            Write-Host "Error: Failed to download the program from $urlSCUTA1"
         }
-    } else {
-        Write-Host "Error: Failed to download the program from $urlSCUTA1"
-    }
 
+
+    }
 } else {
-    Write-Host "$programName is not installed."
+    Write-Host "Trend Micro Apex One Security Agent is not installed."
 }
 
+
+#2
+
+#Old code
+    
 # End Check if Apex One is installed
 
 # Start Check if Workload Security is installed
 
-# Specify the name of the program
-$programName = "Trend Micro Deep Security"
+# Search for Trend Micro Deep Security Agent
+$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
 
-# Create a new instance of the WMI searcher
-$wmiSearcher = New-Object -Type System.Management.ManagementObjectSearcher -ArgumentList "SELECT * FROM Win32_Product"
+if ($deepSecurity -ne $null) {
+    Write-Host "Trend Micro Deep Security Agent found."
+    
+    # Uninstall Trend Micro Deep Security Agent
+    $uninstallResult = $deepSecurity.Uninstall()
 
-# Get the list of installed software
-$installedSoftware = $wmiSearcher.Get()
+    if ($uninstallResult.ReturnValue -eq 0) {
+        Write-Host "Uninstallation of Trend Micro Deep Security Agent was successful."
+    } else {
+        Write-Host "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
 
-# Check if the program is found
-$found = $false
-foreach ($software in $installedSoftware) {
-    if ($software.Name -like "*$programName*") {
-        $found = $true
-        break
+        # If password protected, we will try using the SCUT tool next
+
+        Write-Host " Failed to unistall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
+
+        Write-Host "Initiating the unistallation process of the $programName, using the SCUT tool"
+
+        # Create a WebClient object
+        $webClient = New-Object System.Net.WebClient
+        
+        # Download the program using the DownloadFile method (compatible with PowerShell v1)
+        $webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
+        
+        # Check if the file was downloaded successfully
+        if (Test-Path $downloadPathSCUTWS) {
+            Write-Host "Program SCUT for Workload Security downloaded successfully."
+            Write-Host "Running the program SCUT for Workload Security ..."
+        
+            # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+            $shell = New-Object -ComObject Shell.Application
+            
+            # Define the destination folder path
+            $destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
+            
+            # Create the destination folder if it doesn't exist
+            if (-not (Test-Path $destinationFolderPath)) {
+                New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
+            }
+            
+            # Get the zip folder and destination folder objects
+            $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
+            $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTWS)
+            
+            # Check if the destination folder object is not null
+            if ($destinationFolderSCUTWS -ne $null) {
+                # Copy the items from the zip folder to the destination folder
+                $destinationFolder.CopyHere($zipFolder.Items(), 16)
+        
+                # Run SCUT program to remove WS
+                $programPathSCUTWS = "$env:TEMP\SCUTWS\WS\SCUT.exe"
+    
+                #Build the command
+                $command = "$programPathSCUTWS -noinstall -dbg"
+                
+                # Check if the program exists in the destination folder
+                if (Test-Path $programPathSCUTWS) {
+                    Write-Host "Running SCUT Apex One located at: $programPathSCUTWS"
+                    Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+                } else {
+                    Write-Host "Error: Program not found at $programPathSCUTWS"
+                }
+            } else {
+                Write-Host "Error: Destination folder not accessible."
+            }
+        } else {
+            Write-Host "Error: Failed to download the program from $urlSCUTWS"
+        }
+        
     }
+} else {
+    Write-Host "Trend Micro Deep Security Agent is not installed."
+    
 }
 
-# Output the result
-if ($found) {
-    Write-Host "$programName is installed.
+# End Check if Workload Security is installed
 
-    Write-Host "Initiating the unistallation process of the $programName, using the SCUT tool"
+# Logic to Install Basecamp agent
 
+if ($deepSecurity -eq $nul and $apexOne -eq $nul ) {
     # Create a WebClient object
     $webClient = New-Object System.Net.WebClient
     
     # Download the program using the DownloadFile method (compatible with PowerShell v1)
-    $webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
+    $webClient.DownloadFile($urlagent, $downloadPath)
     
     # Check if the file was downloaded successfully
-    if (Test-Path $downloadPathSCUTWS) {
-        Write-Host "Program SCUT for Workload Security downloaded successfully."
-        Write-Host "Running the program SCUT for Workload Security ..."
+    if (Test-Path $downloadPath) {
+        Write-Host "Program downloaded successfully."
+        Write-Host "Running the program..."
     
         # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
         $shell = New-Object -ComObject Shell.Application
         
         # Define the destination folder path
-        $destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
+        $destinationFolderPath = "$env:TEMP\TMServerAgent"
         
         # Create the destination folder if it doesn't exist
         if (-not (Test-Path $destinationFolderPath)) {
@@ -152,85 +218,30 @@ if ($found) {
         }
         
         # Get the zip folder and destination folder objects
-        $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
-        $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTWS)
+        $zipFolder = $shell.NameSpace($downloadPath)
+        $destinationFolder = $shell.NameSpace($destinationFolderPath)
         
         # Check if the destination folder object is not null
-        if ($destinationFolderSCUTWS -ne $null) {
+        if ($destinationFolder -ne $null) {
             # Copy the items from the zip folder to the destination folder
             $destinationFolder.CopyHere($zipFolder.Items(), 16)
     
-            # Run SCUT program to remove WS
-            $programPathSCUTWS = "$env:TEMP\SCUTWS\WS\SCUT.exe"
-
-            #Build the command
-            $command = "$programPathSCUTWS -noinstall -dbg"
+            # Replace 'EndpointBasecamp.exe' with the actual name of the executable you want to run from the extracted files
+            $programPath = "$env:TEMP\TMServerAgent\EndpointBasecamp.exe"
             
             # Check if the program exists in the destination folder
-            if (Test-Path $programPathSCUTWS) {
-                Write-Host "Running SCUT Apex One located at: $programPathSCUTWS"
-                Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+            if (Test-Path $programPath) {
+                Write-Host "Running the program located at: $programPath"
+                Start-Process -FilePath $programPath
             } else {
-                Write-Host "Error: Program not found at $programPathSCUTWS"
+                Write-Host "Error: Program not found at $programPath"
             }
         } else {
             Write-Host "Error: Destination folder not accessible."
         }
     } else {
-        Write-Host "Error: Failed to download the program from $urlSCUTWS"
-    }
-
-} else {
-    Write-Host "$programName is not installed."
-}
-
-
-# End Check if Workload Security is installed
-
-# Create a WebClient object
-$webClient = New-Object System.Net.WebClient
-
-# Download the program using the DownloadFile method (compatible with PowerShell v1)
-$webClient.DownloadFile($urlagent, $downloadPath)
-
-# Check if the file was downloaded successfully
-if (Test-Path $downloadPath) {
-    Write-Host "Program downloaded successfully."
-    Write-Host "Running the program..."
-
-    # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-    $shell = New-Object -ComObject Shell.Application
-    
-    # Define the destination folder path
-    $destinationFolderPath = "$env:TEMP\TMServerAgent"
-    
-    # Create the destination folder if it doesn't exist
-    if (-not (Test-Path $destinationFolderPath)) {
-        New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
-    }
-    
-    # Get the zip folder and destination folder objects
-    $zipFolder = $shell.NameSpace($downloadPath)
-    $destinationFolder = $shell.NameSpace($destinationFolderPath)
-    
-    # Check if the destination folder object is not null
-    if ($destinationFolder -ne $null) {
-        # Copy the items from the zip folder to the destination folder
-        $destinationFolder.CopyHere($zipFolder.Items(), 16)
-
-        # Replace 'EndpointBasecamp.exe' with the actual name of the executable you want to run from the extracted files
-        $programPath = "$env:TEMP\TMServerAgent\EndpointBasecamp.exe"
-        
-        # Check if the program exists in the destination folder
-        if (Test-Path $programPath) {
-            Write-Host "Running the program located at: $programPath"
-            Start-Process -FilePath $programPath
-        } else {
-            Write-Host "Error: Program not found at $programPath"
-        }
-    } else {
-        Write-Host "Error: Destination folder not accessible."
+        Write-Host "Error: Failed to download the program from $urlagent"
     }
 } else {
-    Write-Host "Error: Failed to download the program from $urlagent"
+    Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One is installed on the target machine"
 }
