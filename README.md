@@ -234,3 +234,21 @@ if (Test-Path $downloadPath) {
 } else {
     Write-Host "Error: Failed to download the program from $urlagent"
 }
+
+# Result with a Trend Micro Workload Security machine
+
+![image](https://github.com/VitorCora/V1S-WP_Migration_Project/assets/59590152/61e838e2-de9f-4bf0-a8c5-20a40632b57a)
+
+![image](https://github.com/VitorCora/V1S-WP_Migration_Project/assets/59590152/75ad7047-208d-4033-a968-d2aaf5c93369)
+
+![image](https://github.com/VitorCora/V1S-WP_Migration_Project/assets/59590152/f0cb8ddd-ec67-4d29-949d-e6ddbff871a8)
+
+![image](https://github.com/VitorCora/V1S-WP_Migration_Project/assets/59590152/61f7fbeb-fd18-4428-bddf-8f2200ae963b)
+
+![image](https://github.com/VitorCora/V1S-WP_Migration_Project/assets/59590152/8257b86c-1d3a-4178-98a5-2a7e1052cd62)
+
+
+
+
+
+
