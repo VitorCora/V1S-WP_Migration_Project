@@ -10,7 +10,9 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Define variables
 
 # Define the URL from which to download the Basecamp agent
-$urlagent = "http://loyal.netbsa.org/TMServerAgent_Windows_auto_x86_64_Server_and_Workload_Protection_Manager_-_302404101471.zip"
+#$urlagent = "http://loyal.netbsa.org/TMServerAgent_Windows_auto_x86_64_Server_and_Workload_Protection_Manager_-_302404101471.zip"
+$urlagent = "https://agentbucket-yourcompanyname.s3.amazonaws.com/TMServerAgent_Windows.zip"
+
 
 # Define the URL from which to download the Basecamp agent
 $urlscuta1 = "http://loyal.netbsa.org/SCUTA1.zip"
