@@ -41,6 +41,7 @@ if ($apexOne -ne $null) {
         Write-Host "Uninstalling Trend Micro Apex One Security Agent..."
         Start-Process -FilePath $uninstallString -Wait
         Write-Host "Trend Micro Apex One Security Agent has been uninstalled."
+        $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
     } else {
         Write-Host "Failed to find uninstall string for Trend Micro Apex One Security Agent."
 
@@ -87,7 +88,16 @@ if ($apexOne -ne $null) {
                 # Check if the program exists in the destination folder
                 if (Test-Path $programPathSCUTA1) {
                     Write-Host "Running SCUT Apex One located at: $programPathSCUTA1"
-                    Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+                    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+                    $process.WaitForExit()
+                    
+                    # Check the exit code of the process
+                    if ($process.ExitCode -eq 0) {
+                        Write-Host "Command executed successfully."
+                    } else {
+                        Write-Host "Command failed with exit code $($process.ExitCode)."
+                    }
+                    #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
                 } else {
                     Write-Host "Error: Program not found at $programPathSCUTA1"
                 }
@@ -173,7 +183,16 @@ if ($deepSecurity -ne $null) {
                 # Check if the program exists in the destination folder
                 if (Test-Path $programPathSCUTWS) {
                     Write-Host "Running SCUT Apex One located at: $programPathSCUTWS"
-                    Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+                    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+                    $process.WaitForExit()
+                    
+                    # Check the exit code of the process
+                    if ($process.ExitCode -eq 0) {
+                        Write-Host "Command executed successfully."
+                    } else {
+                        Write-Host "Command failed with exit code $($process.ExitCode)."
+                    }
+                    #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
                 } else {
                     Write-Host "Error: Program not found at $programPathSCUTWS"
                 }
