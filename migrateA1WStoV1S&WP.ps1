@@ -54,7 +54,7 @@ if ($apexOne -ne $null) {
         $webClient = New-Object System.Net.WebClient
         
         # Download the program using the DownloadFile method (compatible with PowerShell v1)
-        $webClient.DownloadFile($urlSCUTA1, $downloadPathSCUTA1)
+        $webClient.DownloadFile($urlscuta1, $downloadPathSCUTA1)
         
         # Check if the file was downloaded successfully
         if (Test-Path $downloadPathSCUTA1) {
@@ -68,8 +68,8 @@ if ($apexOne -ne $null) {
             $destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
             
             # Create the destination folder if it doesn't exist
-            if (-not (Test-Path $destinationFolderPath)) {
-                New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
+            if (-not (Test-Path $destinationFolderPathSCUTA1)) {
+                New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
             }
             
             # Get the zip folder and destination folder objects
@@ -164,8 +164,8 @@ if ($deepSecurity -ne $null) {
             $destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
             
             # Create the destination folder if it doesn't exist
-            if (-not (Test-Path $destinationFolderPath)) {
-                New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
+            if (-not (Test-Path $destinationFolderPathSCUTWS)) {
+                New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
             }
             
             # Get the zip folder and destination folder objects
