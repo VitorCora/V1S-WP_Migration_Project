@@ -74,12 +74,12 @@ if ($apexOne -ne $null) {
             
             # Get the zip folder and destination folder objects
             $zipFolder = $shell.NameSpace($downloadPathSCUTA1)
-            $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTA1)
+            $destinationFolderSCUTA1 = $shell.NameSpace($destinationFolderPathSCUTA1)
             
             # Check if the destination folder object is not null
             if ($destinationFolderSCUTA1 -ne $null) {
                 # Copy the items from the zip folder to the destination folder
-                $destinationFolder.CopyHere($zipFolder.Items(), 16)
+                $destinationFolderSCUTA1.CopyHere($zipFolder.Items(), 16)
         
                 # Run SCUT program to remove A1
                 $programPathSCUTA1 = "$env:TEMP\SCUTA1\A1\SCUT.exe"
@@ -102,15 +102,14 @@ if ($apexOne -ne $null) {
                     }
                     #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
                 } else {
-                    Write-Host "Error: Program not found at $programPathSCUTA1"
+                    Write-Host "Error: Apex One SCUT Tool not found at $programPathSCUTA1"
                 }
             } else {
                 Write-Host "Error: Destination folder not accessible."
             }
         } else {
-            Write-Host "Error: Failed to download the program from $urlSCUTA1"
+            Write-Host "Error: Failed to download the Apex One SCUT Tool from $urlSCUTA1"
         }
-
 
     }
 } else {
@@ -170,22 +169,22 @@ if ($deepSecurity -ne $null) {
             
             # Get the zip folder and destination folder objects
             $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
-            $destinationFolder = $shell.NameSpace($destinationFolderPathSCUTWS)
+            $destinationFolderSCUTWS = $shell.NameSpace($destinationFolderPathSCUTWS)
             
             # Check if the destination folder object is not null
             if ($destinationFolderSCUTWS -ne $null) {
                 # Copy the items from the zip folder to the destination folder
-                $destinationFolder.CopyHere($zipFolder.Items(), 16)
+                $destinationFolderSCUTWS.CopyHere($zipFolder.Items(), 16)
         
                 # Run SCUT program to remove WS
-                $programPathSCUTWS = "$env:TEMP\SCUTWS\WS\SCUT.exe"
+                $programPathSCUTWS = "$env:TEMP\SCUTWS\DSA_CUT.exe"
     
                 #Build the command
-                $command = "$programPathSCUTWS -noinstall -dbg"
+                $command = "$programPathSCUTWS -F -C"
                 
                 # Check if the program exists in the destination folder
                 if (Test-Path $programPathSCUTWS) {
-                    Write-Host "Running SCUT Apex One located at: $programPathSCUTWS"
+                    Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
                     $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
                     $process.WaitForExit()
                     
@@ -198,13 +197,13 @@ if ($deepSecurity -ne $null) {
                     }
                     #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
                 } else {
-                    Write-Host "Error: Program not found at $programPathSCUTWS"
+                    Write-Host "Error: Workload Security CUT tool not found at $programPathSCUTWS"
                 }
             } else {
                 Write-Host "Error: Destination folder not accessible."
             }
         } else {
-            Write-Host "Error: Failed to download the program from $urlSCUTWS"
+            Write-Host "Error: Failed to download Workload Security CUT from $urlSCUTWS"
         }
         
     }
