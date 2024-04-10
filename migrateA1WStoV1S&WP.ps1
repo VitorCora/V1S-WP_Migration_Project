@@ -4,7 +4,10 @@
 
 if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
     Write-Host "Please run this script as an Administrator."; 
+    Write-Host "Exiting the Script Now, try again later as Administrator"
     exit 
+} else {
+    Write-Host "Running Script as Administrator."
 }
 
 # Define variables
