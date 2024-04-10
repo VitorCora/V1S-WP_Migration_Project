@@ -224,10 +224,10 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
     $webClient = New-Object System.Net.WebClient
     
     # Download the program using the DownloadFile method (compatible with PowerShell v1)
-    $webClient.DownloadFile($urlagent, $downloadPath)
+    $webClient.DownloadFile($urlagent, $downloadPathAgent)
     
     # Check if the file was downloaded successfully
-    if (Test-Path $downloadPath) {
+    if (Test-Path $downloadPathAgent) {
         Write-Host "Program downloaded successfully."
         Write-Host "Running the program..."
     
@@ -243,7 +243,7 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
         }
         
         # Get the zip folder and destination folder objects
-        $zipFolder = $shell.NameSpace($downloadPath)
+        $zipFolder = $shell.NameSpace($downloadPathAgent)
         $destinationFolder = $shell.NameSpace($destinationFolderPath)
         
         # Check if the destination folder object is not null
@@ -265,8 +265,8 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
             Write-Host "Error: Destination folder not accessible."
         }
     } else {
-        Write-Host "Error: Failed to download the program from $urlagent"
+        Write-Host "Error: Failed to download Trend Micro Basecamp the program from $urlagent"
     }
 } else {
-    Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One is installed on the target machine"
+    Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
 }
