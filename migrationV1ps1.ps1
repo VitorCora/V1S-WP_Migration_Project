@@ -139,6 +139,7 @@ if ($deepSecurity -ne $null) {
 
     if ($uninstallResult.ReturnValue -eq 0) {
         Write-Host "Uninstallation of Trend Micro Deep Security Agent was successful."
+        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
     } else {
         Write-Host "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
 
