@@ -14,10 +14,10 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 $urlagent = "https://agentbucket-yourcompanyname.s3.amazonaws.com/TMServerAgent_Windows.zip"
 
 
-# Define the URL from which to download the Basecamp agent
+# Define the URL from which to download the SCUT uninstalling tool for Apex One
 $urlscuta1 = "http://loyal.netbsa.org/SCUTA1.zip"
 
-# Define the URL from which to download the Basecamp agent
+# Define the URL from which to download the SCUT uninstalling tool for Workload Security
 $urlscutws = "http://loyal.netbsa.org/SCUTWS.zip"
 
 # Define the path where the program will be downloaded
