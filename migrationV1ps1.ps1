@@ -36,8 +36,9 @@ $downloadPathSCUTWS = "$env:TEMP\SCUTWS.zip"
 
 # Search for Trend Micro Deep Security Agent
 $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
+$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
 
-if ($apexOne -ne $null) {
+if ($apexOne -ne $null -or $officeScan -ne $null) {
     Write-Host "Trend Micro Apex one/Office Scan Agent found."
 
     # Uninstall Trend Micro Apex One Security Agent
@@ -47,6 +48,8 @@ if ($apexOne -ne $null) {
         Start-Process -FilePath $uninstallString -Wait
         Write-Host "Trend Micro Apex One Security Agent has been uninstalled."
         $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
+        $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+
     } else {
         Write-Host "Failed to find uninstall string for Trend Micro Apex One Security Agent."
 
@@ -100,6 +103,7 @@ if ($apexOne -ne $null) {
                     if ($process.ExitCode -eq 0) {
                         Write-Host "Apex One removed successfully."
                         $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
+                        $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
                     } else {
                         Write-Host "Command failed with exit code $($process.ExitCode)."
                     }
@@ -266,3 +270,5 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
 } else {
     Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
 }
+
+
