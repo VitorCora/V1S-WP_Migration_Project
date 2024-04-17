@@ -13,8 +13,8 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Define variables
 
 # Define the URL from which to download the Basecamp agent
-#$urlagent = "http://loyal.netbsa.org/TMServerAgent_Windows_auto_x86_64_Server_and_Workload_Protection_Manager_-_302404101471.zip"
-$urlagent = "https://agentbucket-yourcompanyname.s3.amazonaws.com/TMServerAgent_Windows.zip"
+$urlagent = "http://loyal.netbsa.org/TMServerAgent_Windows_auto_x86_64_Server_and_Workload_Protection_Manager_-_302404101471.zip"
+#$urlagent = "https://agentbucket-yourcompanyname.s3.amazonaws.com/TMServerAgent_Windows.zip"
 
 
 # Define the URL from which to download the SCUT uninstalling tool for Apex One
@@ -118,12 +118,7 @@ if ($apexOne -ne $null) {
 } else {
     Write-Host "Trend Micro Apex One Security Agent is not installed."
 }
-
-
-#2
-
-#Old code
-    
+   
 # End Check if Apex One is installed
 
 # Start Check if Workload Security is installed
