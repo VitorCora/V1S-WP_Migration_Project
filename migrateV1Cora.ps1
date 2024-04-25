@@ -256,7 +256,8 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
             # Check if the program exists in the destination folder
             if (Test-Path $programPath) {
                 Write-Host "Running the program located at: $programPath"
-                Start-Process -FilePath $programPath
+                $process = Start-Process -FilePath $programPath
+		$process.WaitForExit()
             } else {
                 Write-Host "Error: Program not found at $programPath"
             }
