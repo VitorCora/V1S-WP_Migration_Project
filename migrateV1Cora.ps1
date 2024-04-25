@@ -309,5 +309,5 @@ if ((Get-Date) -ge $timeout) {
     & .\dsa_control -r
     
     # Activate to the manager
-    & .\dsa_control" -a $ACTIVATIONURL "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
+    & .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
 }
