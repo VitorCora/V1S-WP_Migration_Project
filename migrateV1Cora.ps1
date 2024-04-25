@@ -271,6 +271,18 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
     Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
 }
 
+# Check if Trend Micro Deep Security service is installed
+function Check-DeepSecurityInstalled {
+    $service = Get-Service "ds_agent"
+    if ($service -ne $null) {
+        Write-Host "Trend Micro Deep Security is installed."
+        return $true
+    } else {
+        Write-Host "Trend Micro Deep Security is not installed."
+        return $false
+    }
+}
+
 # Set timeout to 15 minutes
 $timeout = (Get-Date).AddMinutes(15)
 
@@ -294,8 +306,8 @@ if ((Get-Date) -ge $timeout) {
 	Set-Location "C:\Program Files\Trend Micro\Deep Security"
 
 	# Reset the manager
-    & dsa_control -r
+    & .\dsa_control -r
     
     # Activate to the manager
-    &dsa_control" -a $ACTIVATIONURL "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
+    & .\dsa_control" -a $ACTIVATIONURL "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
 }
