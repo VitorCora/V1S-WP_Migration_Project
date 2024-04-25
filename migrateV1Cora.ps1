@@ -29,6 +29,9 @@ $downloadPathSCUTA1 = "$env:TEMP\SCUTA1.zip"
 
 $downloadPathSCUTWS = "$env:TEMP\SCUTWS.zip"
 
+# Force PowerShell to use TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 # Start Check if Apex One is installed
 
 #1
