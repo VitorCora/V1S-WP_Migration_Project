@@ -303,7 +303,7 @@ if ((Get-Date) -ge $timeout) {
     Write-Host "Timed out waiting for Trend Micro Deep Security to be installed."
 } else {
     # Change directory to C:\Program Files\Trend Micro\Deep Security
-	Set-Location "C:\Program Files\Trend Micro\Deep Security"
+	Set-Location "C:\Program Files\Trend Micro\Deep Security Agent"
 
 	# Reset the manager
     & .\dsa_control -r
