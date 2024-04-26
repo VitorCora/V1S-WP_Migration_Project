@@ -521,7 +521,7 @@ if ($deepSecurity -ne $null) {
 
 # Logic to Install Basecamp agent
 
-if ($deepSecurity -eq $null -and $apexOne -eq $null ) {
+if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) {
     # Create a WebClient object
     $webClient = New-Object System.Net.WebClient
     
