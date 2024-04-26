@@ -101,7 +101,7 @@ function AppendToLogFile {
         Write-Host "Log entry appended successfully to $logfile"
     }
     catch {
-        Write-Host "Failed to append log entry to $LogFilePath. Error: $_"
+        Write-Host "Failed to append log entry to $logfile. Error: $_"
     }
 }
 
@@ -118,141 +118,147 @@ Write-Host $message
 AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
 if ($apexOne -ne $null) {
-    $message = "Trend Micro Apex one Agent found."
-    $type = "INFO"
-    Write-Host $message
-    AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-
-    # Uninstall Trend Micro Apex One Security Agent
-    $uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Apex One Security Agent*" } | Select-Object -ExpandProperty UninstallString
-    if ($uninstallString -ne $null) {
-        $message = "Uninstalling Trend Micro Apex One Security Agent..."
+	$message = "Trend Micro Apex one Agent found."
 	$type = "INFO"
 	Write-Host $message
 	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-        Start-Process -FilePath $uninstallString -Wait
-        $message = "Trend Micro Apex One Security Agent has been uninstalled."
-        $type = "INFO"
-	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-	$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
 
-    } else {
-        $message =  "Failed to find uninstall string for Trend Micro Apex One Security Agent."
-	$type = "INFO"
-	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-        $message =  "Initiating the unistallation process of the Apex One, using the SCUT tool A1"
-    	$type = "INFO"
-	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
- 
-        # Create a WebClient object
-        $webClient = New-Object System.Net.WebClient
-        
-        # Download the program using the DownloadFile method (compatible with PowerShell v1)
-        $webClient.DownloadFile($urlscuta1, $downloadPathSCUTA1)
-        $message =  "Initiating the download of the SCUT tool A1"
-    	$type = "INFO"
-	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
- 
-        # Check if the file was downloaded successfully
-        if (Test-Path $downloadPathSCUTA1) {
-		$message =  "Program SCUT for Apex One downloaded successfully."
+    	# Uninstall Trend Micro Apex One Security Agent
+    	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Apex One Security Agent*" } | Select-Object -ExpandProperty UninstallString
+    	if ($uninstallString -ne $null) {
+        	$message = "Uninstalling Trend Micro Apex One Security Agent using command line..."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+        	Start-Process -FilePath $uninstallString -Wait
+        	$message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
+        	$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
+  		if ($apexOne -eq $null){
+	    		$message = "Trend Micro Apex One Security Agent has been uninstalled."
+	        	$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+   		}
+    	} else {
+        	$message =  "Failed to find uninstall string for Trend Micro Apex One Security Agent."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+        	$message =  "Initiating the uninstallation process of the Apex One, using the SCUT tool A1"
     		$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-            	$message = "Running the program SCUT for Apex One ..."
-	    	$type = "INFO"
-     	    	Write-Host $message
-	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-        
-        	# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-        	$shell = New-Object -ComObject Shell.Application
-            
-        	# Define the destination folder path
-        	$destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
-            
-            	# Create the destination folder if it doesn't exist
-	     	$message = "Checking if SCUTA1 folder already exists"
-	    	$type = "INFO"
-     	    	Write-Host $message
-	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-            	if (-not (Test-Path $destinationFolderPathSCUTA1)) {
-                	New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
-		 	$message = "Creating SCUTA1 folder"
-	    		$type = "INFO"
-     	    		Write-Host $message
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-            	} else {
-		 	$message = "Found SCUTA1 folder"
-	    		$type = "INFO"
-     	    		Write-Host $message
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-      		}
-            
-            	# Get the zip folder and destination folder objects
-            	$zipFolder = $shell.NameSpace($downloadPathSCUTA1)
-            	$destinationFolderSCUTA1 = $shell.NameSpace($destinationFolderPathSCUTA1)
-            
-            	# Check if the destination folder object is not null
-            	if ($destinationFolderSCUTA1 -ne $null) {
-                	# Copy the items from the zip folder to the destination folder
-                	$destinationFolderSCUTA1.CopyHere($zipFolder.Items(), 16)
-        
-                	# Run SCUT program to remove A1
-                	$programPathSCUTA1 = "$env:TEMP\SCUTA1\A1\SCUT.exe"
-
-			$message = "Running command $programPathSCUTA1 -noinstall -dbg"
-	    		$type = "INFO"
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
  
-                	#Build the command
-                	$command = "$programPathSCUTA1 -noinstall -dbg"
-                	
-                	# Check if the program exists in the destination folder
-                	if (Test-Path $programPathSCUTA1) {
-	                    	$message = "Running SCUT Apex One located at: $programPathSCUTA1"
-	    			$type = "INFO"
-     	    			Write-Host $message
-	    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-	                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-	                    	$process.WaitForExit()
-                    
-	                    	# Check the exit code of the process
-	                    	if ($process.ExitCode -eq 0) {
-	                        	$message = "Apex One removed successfully."
-			  	    	$type = "INFO"
-     	    				Write-Host $message
-	    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-	                        	$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
-	                    	} else {
-	                        	$message = "Command failed with exit code $($process.ExitCode)."
-			  		$type = "ERROR"
-     	    				Write-Host $message
-	    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-	                    	}
-
-                	} else {
-                    		$message = "Error: Apex One SCUT Tool not found at $programPathSCUTA1"
-		      		$type = "ERROR"
-     	    			Write-Host $message
-	    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-                	}
-            	} else {
-                	$message =  "Error: Destination folder not accessible."
-		 	$type = "ERROR"
+        	# Create a WebClient object
+        	$webClient = New-Object System.Net.WebClient
+        
+        	# Download the program using the DownloadFile method (compatible with PowerShell v1)
+        	$webClient.DownloadFile($urlscuta1, $downloadPathSCUTA1)
+        	$message =  "Initiating the download of the SCUT tool A1"
+    		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+ 
+        	# Check if the file was downloaded successfully
+        	if (Test-Path $downloadPathSCUTA1) {
+			$message =  "Program SCUT for Apex One downloaded successfully."
+    			$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+            		$message = "Running the program SCUT for Apex One ..."
+	    		$type = "INFO"
      	    		Write-Host $message
 	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-            	}
-        } else {
-    		$message = "Error: Failed to download the Apex One SCUT Tool from $urlSCUTA1"
-      		$type = "ERROR"
-     	    	Write-Host $message
-	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-
-    	}
+        
+        		# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+        		$shell = New-Object -ComObject Shell.Application
+            
+        		# Define the destination folder path
+        		$destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
+            
+            		# Create the destination folder if it doesn't exist
+	     		$message = "Checking if SCUTA1 folder already exists"
+	    		$type = "INFO"
+     	    		Write-Host $message
+	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+            		if (-not (Test-Path $destinationFolderPathSCUTA1)) {
+                		New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
+		 		$message = "Creating SCUTA1 folder"
+	    			$type = "INFO"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	            	} else {
+			 	$message = "Found SCUTA1 folder"
+		    		$type = "INFO"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	      		}
+            
+	            	# Get the zip folder and destination folder objects
+	            	$zipFolder = $shell.NameSpace($downloadPathSCUTA1)
+	            	$destinationFolderSCUTA1 = $shell.NameSpace($destinationFolderPathSCUTA1)
+            
+	            	# Check if the destination folder object is not null
+	            	if ($destinationFolderSCUTA1 -ne $null) {
+	                	# Copy the items from the zip folder to the destination folder
+	                	$destinationFolderSCUTA1.CopyHere($zipFolder.Items(), 16)
+	        
+	                	# Run SCUT program to remove A1
+	                	$programPathSCUTA1 = "$env:TEMP\SCUTA1\A1\SCUT.exe"
+	
+				$message = "Running command $programPathSCUTA1 -noinstall -dbg"
+		    		$type = "INFO"
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	 
+	                	#Build the command
+	                	$command = "$programPathSCUTA1 -noinstall -dbg"
+	                	
+	                	# Check if the program exists in the destination folder
+	                	if (Test-Path $programPathSCUTA1) {
+		                    	$message = "Running SCUT Apex One located at: $programPathSCUTA1"
+		    			$type = "INFO"
+	     	    			Write-Host $message
+		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+		                    	$process.WaitForExit()
+	                    
+		                    	# Check the exit code of the process
+		                    	if ($process.ExitCode -eq 0) {
+		                        	$message = "Apex One removed successfully."
+				  	    	$type = "INFO"
+	     	    				Write-Host $message
+		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		                        	$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
+		                    	} else {
+		                        	$message = "Command failed with exit code $($process.ExitCode)."
+				  		$type = "ERROR"
+	     	    				Write-Host $message
+		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		                    	}
+	
+	                	} else {
+	                    		$message = "Error: Apex One SCUT Tool not found at $programPathSCUTA1"
+			      		$type = "ERROR"
+	     	    			Write-Host $message
+		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	                	}
+	            	} else {
+	                	$message =  "Error: Destination folder not accessible."
+			 	$type = "ERROR"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	            	}
+	        } else {
+	    		$message = "Error: Failed to download the Apex One SCUT Tool from $urlSCUTA1"
+	      		$type = "ERROR"
+	     	    	Write-Host $message
+		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	
+	    	}
+      }
 } else {
 	$message = "Trend Micro Apex One Security Agent is not installed."
     	$type = "INFO"
@@ -267,88 +273,153 @@ if ($apexOne -ne $null) {
 # Search for Trend Micro Deep OfficeScan Client
 
 $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+$message = "Looking for Trend Micro OfficeScan Client."
+$type = "INFO"
+Write-Host $message
+AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
 if ($officeScan -ne $null) {
-    Write-Host "Trend Micro OfficeScan Agent found."
+	$message "Trend Micro OfficeScan Agent found."
+     	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
-    # Uninstall Trend Micro OfficeScan Security Agent
-    $uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro OfficeScan Client*" } | Select-Object -ExpandProperty UninstallString
-    if ($uninstallString -ne $null) {
-        Write-Host "Uninstalling Trend Micro Apex One Security Agent..."
-        Start-Process -FilePath $uninstallString -Wait
-        Write-Host "Trend Micro Apex One Security Agent has been uninstalled."
-        $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
-
-    } else {
-        Write-Host "Failed to find uninstall string for Trend Micro OfficeScan Client."
-
-
-        Write-Host "Initiating the unistallation process of the OfficeScan, using the SCUT tool"
+	# Uninstall Trend Micro OfficeScan Security Agent
+	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro OfficeScan Client*" } | Select-Object -ExpandProperty UninstallString
+    	if ($uninstallString -ne $null) {
+	        $message = "Uninstalling Trend Micro OfficeScan Client via command line..."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	        Start-Process -FilePath $uninstallString -Wait
+	        $message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
+	        $type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+        	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+	 	if ($officeScan -eq $null){
+	  	        $message = "Trend Micro OfficeScan Client has been uninstalled."
+		        $type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+   		}
+   	} else {
+       		$message =  "Failed to find uninstall string for Trend Micro OfficeScan Client."
+		$type = "ERROR"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		$message =  "Initiating the uninstallation process of the OfficeScan, using the SCUT tool"
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
     
-        # Create a WebClient object
-        $webClient = New-Object System.Net.WebClient
+        	# Create a WebClient object
+        	$webClient = New-Object System.Net.WebClient
         
-        # Download the program using the DownloadFile method (compatible with PowerShell v1)
-        $webClient.DownloadFile($urlscuta1, $downloadPathSCUTA1)
+        	# Download the program using the DownloadFile method (compatible with PowerShell v1)
+        	$webClient.DownloadFile($urlscuta1, $downloadPathSCUTA1)
+		$message =  "Initiating the download of the SCUT tool A1"
+  		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
         
-        # Check if the file was downloaded successfully
-        if (Test-Path $downloadPathSCUTA1) {
-            Write-Host "Program SCUT for Apex One downloaded successfully."
-            Write-Host "Running the program SCUT for Apex One ..."
-        
-            # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-            $shell = New-Object -ComObject Shell.Application
+        	# Check if the file was downloaded successfully
+	        if (Test-Path $downloadPathSCUTA1) {
+		  	$message =  "Program SCUT for OfficeScan downloaded successfully."
+	    		$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	            	$message = "Running the program SCUT for OfficeScan ..."
+	   		$type = "INFO"
+	     		Write-Host $message
+		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type      	
+		        
+	           	# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+		    	$shell = New-Object -ComObject Shell.Application
+		            
+	           	# Define the destination folder path
+		  	$destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
+		            
+		        # Create the destination folder if it doesn't exist
+	  	     	$message = "Checking if SCUTA1 folder already exists"
+		    	$type = "INFO"
+	     	    	Write-Host $message
+		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		        if (-not (Test-Path $destinationFolderPathSCUTA1)) {
+		                New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
+		  		 $message = "Creating SCUTA1 folder"
+		    		$type = "INFO"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	            	} else {
+			 	$message = "Found SCUTA1 folder"
+		    		$type = "INFO"
+	  	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	     		}
             
-            # Define the destination folder path
-            $destinationFolderPathSCUTA1 = "$env:TEMP\SCUTA1"
-            
-            # Create the destination folder if it doesn't exist
-            if (-not (Test-Path $destinationFolderPathSCUTA1)) {
-                New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
-            }
-            
-            # Get the zip folder and destination folder objects
-            $zipFolder = $shell.NameSpace($downloadPathSCUTA1)
-            $destinationFolderSCUTA1 = $shell.NameSpace($destinationFolderPathSCUTA1)
-            
-            # Check if the destination folder object is not null
-            if ($destinationFolderSCUTA1 -ne $null) {
-                # Copy the items from the zip folder to the destination folder
-                $destinationFolderSCUTA1.CopyHere($zipFolder.Items(), 16)
-        
-                # Run SCUT program to remove A1
-                $programPathSCUTA1 = "$env:TEMP\SCUTA1\NA1\SCUT.exe"
-    
-                #Build the command
-                $command = "$programPathSCUTA1 -noinstall -dbg"
-                
-                # Check if the program exists in the destination folder
-                if (Test-Path $programPathSCUTA1) {
-                    Write-Host "Running SCUT OfficeScan located at: $programPathSCUTA1"
-                    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-                    $process.WaitForExit()
-                    
-                    # Check the exit code of the process
-                    if ($process.ExitCode -eq 0) {
-                        Write-Host "OfficeScan removed successfully."
-                        $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
-                    } else {
-                        Write-Host "Command failed with exit code $($process.ExitCode)."
-                    }
-                    #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
-                } else {
-                    Write-Host "Error: OfficeScan SCUT Tool not found at $programPathSCUTA1"
-                }
-            } else {
-                Write-Host "Error: Destination folder not accessible."
-            }
-        } else {
-            Write-Host "Error: Failed to download the OfficeScan SCUT Tool from $urlSCUTA1"
-        }
-
-    }
+	           	# Get the zip folder and destination folder objects
+	            	$zipFolder = $shell.NameSpace($downloadPathSCUTA1)
+		  	$destinationFolderSCUTA1 = $shell.NameSpace($destinationFolderPathSCUTA1)
+	            
+		        # Check if the destination folder object is not null
+		        if ($destinationFolderSCUTA1 -ne $null) {
+		                # Copy the items from the zip folder to the destination folder
+		                $destinationFolderSCUTA1.CopyHere($zipFolder.Items(), 16)
+		        
+		                # Run SCUT program to remove A1
+		                $programPathSCUTA1 = "$env:TEMP\SCUTA1\NA1\SCUT.exe"
+		    
+		                #Build the command
+		                $command = "$programPathSCUTA1 -noinstall -dbg"
+		                
+		        	# Check if the program exists in the destination folder
+		                if (Test-Path $programPathSCUTA1) {
+			                $message = "Running SCUT Apex One located at: $programPathSCUTA1"
+		    			$type = "INFO"
+	    	    			Write-Host $message
+	    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type             	
+		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+		                    	$process.WaitForExit()
+		                    
+		                    	# Check the exit code of the process
+		                   	if ($process.ExitCode -eq 0) {
+			   	                $message = "OfficeScan removed successfully."
+			  	    		$type = "INFO"
+	     	    				Write-Host $message
+		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			                	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+			            	} else {
+			       	               $message = "Command failed with exit code $($process.ExitCode)."
+				  		$type = "ERROR"
+	   	    				Write-Host $message
+	    					AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		                    	}
+                    			#Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
+	                	} else {
+	                    		$message = "Error: OfficeScan SCUT Tool not found at $programPathSCUTA1"
+			      		$type = "ERROR"
+	     	    			Write-Host $message
+		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	                	}
+			} else {
+	                	$message =  "Error: Destination folder not accessible."
+			 	$type = "ERROR"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    		}
+	        } else {
+	    		$message = "Error: Failed to download the OfficeScan SCUT Tool from $urlSCUTA1"
+	   		$type = "ERROR"
+		    	Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		}
+	}
 } else {
-    Write-Host "Trend Micro OfficeScan Client is not installed."
+	$message = "Trend Micro OfficeScan Client is not installed."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 }
    
 # End Check if OfficeScan is installed
@@ -375,9 +446,9 @@ if ($deepSecurity -ne $null) {
 
         # If password protected, we will try using the SCUT tool next
 
-        Write-Host " Failed to unistall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
+        Write-Host " Failed to uninstall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
 
-        Write-Host "Initiating the unistallation process of the $programName, using the SCUT tool"
+        Write-Host "Initiating the uninstallation process of the $programName, using the SCUT tool"
 
         # Create a WebClient object
         $webClient = New-Object System.Net.WebClient
