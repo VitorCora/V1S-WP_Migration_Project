@@ -428,150 +428,230 @@ if ($officeScan -ne $null) {
 
 # Search for Trend Micro Deep Security Agent
 $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+$message = "Looking for Trend Micro Deep Security Agent."
+$type = "INFO"
+Write-Host $message
+AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
 if ($deepSecurity -ne $null) {
-    Write-Host "Trend Micro Deep Security Agent found."
-    
-    # Uninstall Trend Micro Deep Security Agent
-    $uninstallResult = $deepSecurity.Uninstall()
-
-    if ($uninstallResult.ReturnValue -eq 0) {
-	$message =  "Uninstallation of Trend Micro Deep Security Agent was successful."
+	$message = "Trend Micro Deep Security/Workload Security Agent found."
     	$type = "INFO"
-	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
-        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
-    } else {
-        Write-Host "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	$message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type    
+    	# Uninstall Trend Micro Deep Security Agent
+    	$uninstallResult = $deepSecurity.Uninstall() -Wait
 
-        # If password protected, we will try using the SCUT tool next
+    	if ($uninstallResult.ReturnValue -eq $true) {
+		$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+    	} else {
+		$message = "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
+		$type = "ERROR"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
-        Write-Host " Failed to uninstall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
-
-        Write-Host "Initiating the uninstallation process of the $programName, using the SCUT tool"
-
-        # Create a WebClient object
-        $webClient = New-Object System.Net.WebClient
-        
-        # Download the program using the DownloadFile method (compatible with PowerShell v1)
-        $webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
-        
-        # Check if the file was downloaded successfully
-        if (Test-Path $downloadPathSCUTWS) {
-            Write-Host "Program SCUT for Workload Security downloaded successfully."
-            Write-Host "Running the program SCUT for Workload Security ..."
-        
-            # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-            $shell = New-Object -ComObject Shell.Application
-            
-            # Define the destination folder path
-            $destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
-            
-            # Create the destination folder if it doesn't exist
-            if (-not (Test-Path $destinationFolderPathSCUTWS)) {
-                New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
-            }
-            
-            # Get the zip folder and destination folder objects
-            $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
-            $destinationFolderSCUTWS = $shell.NameSpace($destinationFolderPathSCUTWS)
-            
-            # Check if the destination folder object is not null
-            if ($destinationFolderSCUTWS -ne $null) {
-                # Copy the items from the zip folder to the destination folder
-                $destinationFolderSCUTWS.CopyHere($zipFolder.Items(), 16)
-        
-                # Run SCUT program to remove WS
-                $programPathSCUTWS = "$env:TEMP\SCUTWS\DSA_CUT.exe"
-    
-                #Build the command
-                $command = "$programPathSCUTWS -F -C"
-                
-                # Check if the program exists in the destination folder
-                if (Test-Path $programPathSCUTWS) {
-                    Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
-                    $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-                    $process.WaitForExit()
-                    
-                    # Check the exit code of the process
-                    if ($process.ExitCode -eq 0) {
-                        Write-Host "Workload Security removed successfully."
-                        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
-                    } else {
-                        Write-Host "Command failed with exit code $($process.ExitCode)."
-                    }
-                    #Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
-                } else {
-                    Write-Host "Error: Workload Security CUT tool not found at $programPathSCUTWS"
-                }
-            } else {
-                Write-Host "Error: Destination folder not accessible."
-            }
+	        # If password protection is ON, we will try using the SCUT tool next
+		$message = "Failed to uninstall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
+		$type = "ERROR"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		$message = "Initiating the uninstallation process of the $programName, using the SCUT tool"
+		$type = "ERROR"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	
+	        # Create a WebClient object
+	        $webClient = New-Object System.Net.WebClient
+	        
+	        # Download the program using the DownloadFile method (compatible with PowerShell v1)
+	        $webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
+	        
+	        # Check if the file was downloaded successfully
+	        if (Test-Path $downloadPathSCUTWS) {
+			message = "Program SCUT for Workload Security downloaded successfully."
+			$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	  		$message = "Running the program SCUT for Workload Security ..."
+			$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	        
+	           	# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+	            	$shell = New-Object -ComObject Shell.Application
+	            
+	            	# Define the destination folder path
+	            	$destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
+	            
+		        # Create the destination folder if it doesn't exist
+		        $message = "Checking if SCUT folder already exists"
+	    		$type = "INFO"
+     	    		Write-Host $message
+	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	  		if (-not (Test-Path $destinationFolderPathSCUTWS)) {
+				New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
+    		 		$message = "Creating SCUT folder"
+	    			$type = "INFO"
+	     	    		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		        }
+	            
+		        # Get the zip folder and destination folder objects
+		        $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
+		        $destinationFolderSCUTWS = $shell.NameSpace($destinationFolderPathSCUTWS)
+	            
+			# Check if the destination folder object is not null
+		        if ($destinationFolderSCUTWS -ne $null) {
+		        # Copy the items from the zip folder to the destination folder
+	                $destinationFolderSCUTWS.CopyHere($zipFolder.Items(), 16)
+		        
+	                # Run SCUT program to remove WS
+	                $programPathSCUTWS = "$env:TEMP\SCUTWS\DSA_CUT.exe"
+		    
+		        #Build the command
+	                $command = "$programPathSCUTWS -F -C"
+		                
+	                # Check if the program exists in the destination folder
+		        if (Test-Path $programPathSCUTWS) {
+			 	$message = "Running SCUT located at: $programPathSCUTWS"
+			    	$type = "INFO"
+		     		Write-Host $message
+		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	                    	Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
+	                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+	                   	$process.WaitForExit()
+	                    
+	                    	# Check the exit code of the process
+	                    	if ($process.ExitCode -eq 0) {
+		      		        $message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
+				      	$type = "INFO"
+	     	    			Write-Host $message
+		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	                        	$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+	                    	} else {
+		                        $message = "Command failed with exit code $($process.ExitCode)."
+				  	$type = "ERROR"
+	     	    			Write-Host $message
+		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	                    	}
+			} else {
+		        	$message = "Error: Workload Security CUT tool not found at $programPathSCUTWS"
+		      		$type = "ERROR"
+	       			Write-Host $message
+			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+                	}
+            	} else {
+	        	$message = "Error: Destination folder not accessible"
+	      		$type = "ERROR"
+       			Write-Host $message
+		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+            	}
         } else {
-            Write-Host "Error: Failed to download Workload Security CUT from $urlSCUTWS"
-        }
-        
-    }
+  		$message =  "Error: Failed to download Workload Security CUT from $urlSCUTWS"
+	      	$type = "ERROR"
+	    	Write-Host $message
+	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+       	}
 } else {
-    Write-Host "Trend Micro Deep Security Agent is not installed."
-    
+	$message = "Trend Micro Deep Security Agent is not installed."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type    
 }
 
 # End Check if Workload Security is installed
 
+
+$message = "Finished looking for older versions installed on the host."
+$type = "INFO"
+Write-Host $message
+AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+
 # Logic to Install Basecamp agent
 
 if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) {
-    # Create a WebClient object
-    $webClient = New-Object System.Net.WebClient
+	$message = "Starting Installation process of the Trend Micro Basecamp Agent"
+	$type = "INFO"
+	Write-Host $message
+	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+ 	# Create a WebClient object
+	$webClient = New-Object System.Net.WebClient
+	    
+	# Download the program using the DownloadFile method (compatible with PowerShell v1)
+	$webClient.DownloadFile($urlagent, $downloadPathAgent)
+	    
+	# Check if the file was downloaded successfully
+	if (Test-Path $downloadPathAgent) {
+	  	$message = "Trend Micro Basecamp Agent downloaded successfully."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	 	$message = "Running the Trend Micro Basecamp Agent..."
+		$type = "INFO"
+		Write-Host $message
+		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
     
-    # Download the program using the DownloadFile method (compatible with PowerShell v1)
-    $webClient.DownloadFile($urlagent, $downloadPathAgent)
+	        # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+	        $shell = New-Object -ComObject Shell.Application
+        
+	        # Define the destination folder path
+	        $destinationFolderPath = "$env:TEMP\TMServerAgent"
+        
+	        # Create the destination folder if it doesn't exist
+	        if (-not (Test-Path $destinationFolderPath)) {
+	            New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
+	        }
+        
+	        # Get the zip folder and destination folder objects
+	        $zipFolder = $shell.NameSpace($downloadPathAgent)
+	        $destinationFolder = $shell.NameSpace($destinationFolderPath)
+        
+	        # Check if the destination folder object is not null
+	        if ($destinationFolder -ne $null) {
+	        	# Copy the items from the zip folder to the destination folder
+	        	$destinationFolder.CopyHere($zipFolder.Items(), 16)
     
-    # Check if the file was downloaded successfully
-    if (Test-Path $downloadPathAgent) {
-        Write-Host "Program downloaded successfully."
-        Write-Host "Running the program..."
-    
-        # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-        $shell = New-Object -ComObject Shell.Application
-        
-        # Define the destination folder path
-        $destinationFolderPath = "$env:TEMP\TMServerAgent"
-        
-        # Create the destination folder if it doesn't exist
-        if (-not (Test-Path $destinationFolderPath)) {
-            New-Item -ItemType Directory -Path $destinationFolderPath | Out-Null
-        }
-        
-        # Get the zip folder and destination folder objects
-        $zipFolder = $shell.NameSpace($downloadPathAgent)
-        $destinationFolder = $shell.NameSpace($destinationFolderPath)
-        
-        # Check if the destination folder object is not null
-        if ($destinationFolder -ne $null) {
-            # Copy the items from the zip folder to the destination folder
-            $destinationFolder.CopyHere($zipFolder.Items(), 16)
-    
-            # Replace 'EndpointBasecamp.exe' with the actual name of the executable you want to run from the extracted files
-            $programPath = "$env:TEMP\TMServerAgent\EndpointBasecamp.exe"
-            
-            # Check if the program exists in the destination folder
-            if (Test-Path $programPath) {
-                Write-Host "Running the program located at: $programPath"
-                $process = Start-Process -FilePath $programPath
-		$process.WaitForExit()
-            } else {
-                Write-Host "Error: Program not found at $programPath"
-            }
-        } else {
-            Write-Host "Error: Destination folder not accessible."
-        }
-    } else {
-        Write-Host "Error: Failed to download Trend Micro Basecamp the program from $urlagent"
-    }
+		        # Replace 'EndpointBasecamp.exe' with the actual name of the executable you want to run from the extracted files
+		        $programPath = "$env:TEMP\TMServerAgent\EndpointBasecamp.exe"
+		            
+		        # Check if the program exists in the destination folder
+		        if (Test-Path $programPath) {
+		  		$message = "Running the program located at: $programPath"
+			    	$type = "INFO"
+			    	Write-Host $message
+			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		                $process = Start-Process -FilePath $programPath
+				$process.WaitForExit()
+		        } else {
+		  	      	$message = "Error: Program not found at $programPath"
+			    	$type = "ERROR"
+			    	Write-Host $message
+			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+            		}
+        	} else {
+	      	  	$message = "Error: Destination folder not accessible."
+		    	$type = "ERROR"
+		    	Write-Host $message
+		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+        	}
+	} else {
+	  	$message = "Error: Failed to download Trend Micro Basecamp the program from $urlagent"
+	    	$type = "ERROR"
+	    	Write-Host $message
+	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	}
 } else {
-    Write-Host "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
+ 	$message = "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
+    	$type = "ERROR"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 }
 
 # Check if Trend Micro Deep Security service is installed
