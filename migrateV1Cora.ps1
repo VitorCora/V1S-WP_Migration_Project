@@ -141,7 +141,7 @@ if ($apexOne -ne $null) {
 		$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-        	Start-Process -FilePath $uninstallString -Wait -Timeout 600
+        	Start-Process -FilePath $uninstallString -Wait
         	$message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
         	$type = "INFO"
 		Write-Host $message
@@ -300,7 +300,7 @@ if ($officeScan -ne $null) {
 		$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-	        Start-Process -FilePath $uninstallString -Wait -Timeout 600
+	        Start-Process -FilePath $uninstallString -Wait
 	        $message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
 	        $type = "INFO"
 		Write-Host $message
@@ -455,7 +455,7 @@ if ($deepSecurity -ne $null) {
         $message = "Uninstalling Trend Micro Deep Security/Workload Security Agent using command line..."
         Write-Host $message
         AppendToLogFile -logfile $logfile -Message $message -Type $type
-        Start-Process -FilePath $uninstallString -Wait -Timeout 600
+        Start-Process -FilePath $uninstallString -Wait
         $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
         if ($deepSecurity -eq $null) {
             $message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
