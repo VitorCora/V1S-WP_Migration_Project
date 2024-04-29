@@ -108,7 +108,7 @@ function AppendToLogFile {
 	        	}
 	        catch {
 	        	$retryCount++
-	            	Write-Host "Attempt $retryCount: Failed to append log entry to $logfile. Error: $_"
+	            	Write-Host "Attempt $retryCount : Failed to append log entry to $logfile. Error: $_"
 	            	Start-Sleep -Seconds 5  # Wait for 5 seconds before retrying
 	        }
 	}
