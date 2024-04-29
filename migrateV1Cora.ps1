@@ -95,7 +95,7 @@ function AppendToLogFile {
 	$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
 	# Construct the log entry
-	$logentry = "$type: $timestamp message: $message"
+	 $logentry = "{0}: {1} message: {2}" -f $type, $timestamp, $message
 
 	$retryCount = 0
 
