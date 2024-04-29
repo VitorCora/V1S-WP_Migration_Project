@@ -445,23 +445,32 @@ Write-Host $message
 AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 if ($deepSecurity -ne $null) {
-	$message = "Trend Micro Deep Security/Workload Security Agent found."
+    $message = "Trend Micro Deep Security/Workload Security Agent found."
     $type = "INFO"
     Write-Host $message
     AppendToLogFile -logfile $logfile -Message $message -Type $type
-	$message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
+    $message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
     $type = "INFO"
     Write-Host $message
     AppendToLogFile -logfile $logfile -Message $message -Type $type    
     # Uninstall Trend Micro Deep Security Agent
-    $uninstallResult = $deepSecurity.Uninstall() -Wait
-
-    if ($uninstallResult.ReturnValue -eq $true) {
-		$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
-		$type = "INFO"
+    $uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Deep Security Agent*" } | Select-Object -ExpandProperty UninstallString
+    if ($uninstallString -ne $null) {
+        $message = "Uninstalling Trend Micro Deep Security/Workload Security Agent using command line..."
+	$type = "INFO"
+	Write-Host $message
+	AppendToLogFile -logfile $logfile -Message $message -Type $type
+        Start-Process -FilePath $uninstallString -Wait
+        $message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
+        $type = "INFO"
+	Write-Host $message
+	AppendToLogFile -logfile $logfile -Message $message -Type $type
+	$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+  	if ($deepSecurity -eq $null){
+	    	$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
+	        $type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
     } else {
 		$message = "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
 		$type = "ERROR"
