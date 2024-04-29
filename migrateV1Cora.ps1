@@ -445,135 +445,145 @@ Write-Host $message
 AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 if ($deepSecurity -ne $null) {
-    $message = "Trend Micro Deep Security/Workload Security Agent found."
-    $type = "INFO"
-    Write-Host $message
-    AppendToLogFile -logfile $logfile -Message $message -Type $type
-    $message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
-    $type = "INFO"
-    Write-Host $message
-    AppendToLogFile -logfile $logfile -Message $message -Type $type    
-    # Uninstall Trend Micro Deep Security Agent
-    $uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Deep Security Agent*" } | Select-Object -ExpandProperty UninstallString
-    if ($uninstallString -ne $null) {
-        $message = "Uninstalling Trend Micro Deep Security/Workload Security Agent using command line..."
-	$type = "INFO"
-	Write-Host $message
-	AppendToLogFile -logfile $logfile -Message $message -Type $type
-        Start-Process -FilePath $uninstallString -Wait
-        $message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
-        $type = "INFO"
-	Write-Host $message
-	AppendToLogFile -logfile $logfile -Message $message -Type $type
-	$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
-  	if ($deepSecurity -eq $null){
-	    	$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
-	        $type = "INFO"
+	$message = "Trend Micro Deep Security/Workload Security Agent found."
+   	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
+    	$message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type    
+    	# Uninstall Trend Micro Deep Security Agent
+    	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Deep Security Agent*" } | Select-Object -ExpandProperty UninstallString
+    	if ($uninstallString -ne $null) {
+        	$message = "Uninstalling Trend Micro Deep Security/Workload Security Agent using command line..."
+		$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-    } else {
-		$message = "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
-		$type = "ERROR"
+        	Start-Process -FilePath $uninstallString -Wait
+        	$message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
+        	$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-
-        # If password protection is ON, we will try using the SCUT tool next
-		$message = "Failed to uninstall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
-		$type = "ERROR"
-		Write-Host $message
-		AppendToLogFile -logfile $logfile -Message $message -Type $type
-		$message = "Initiating the uninstallation process of the $programName, using the SCUT tool"
-		$type = "ERROR"
-		Write-Host $message
-		AppendToLogFile -logfile $logfile -Message $message -Type $type
-        # Create a WebClient object
-        $webClient = New-Object System.Net.WebClient
-        # Download the program using the DownloadFile method (compatible with PowerShell v1)
-        $webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
-        # Check if the file was downloaded successfully
-        if (Test-Path $downloadPathSCUTWS) {
-			$message = "Program SCUT for Workload Security downloaded successfully."
+		$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+  		if ($deepSecurity -eq $null){
+	    		$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
+	        	$type = "INFO"
+			Write-Host $message
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
+    		} else {
+			$message = "Failed to find uninstall string for Trend Micro Deep Security/Workload Security Agent."
+			$type = "ERROR"
+			Write-Host $message
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
+        		# If password protection is ON, we will try using the SCUT tool next
+			$message = "Initiating the uninstallation process of the Trend Micro Deep Security/Workload Security Agent, using the SCUT tool A1"
 			$type = "INFO"
 			Write-Host $message
 			AppendToLogFile -logfile $logfile -Message $message -Type $type
-            $message = "Running the program SCUT for Workload Security ..."
-			$type = "INFO"
+        		# Create a WebClient object
+        		$webClient = New-Object System.Net.WebClient
+        		# Download the program using the DownloadFile method (compatible with PowerShell v1)
+        		$webClient.DownloadFile($urlSCUTWS, $downloadPathSCUTWS)
+	        	$message =  "Initiating the download of the Trend Micro Deep Security/Workload Security Agent SCUT tool"
+	    		$type = "INFO"
 			Write-Host $message
 			AppendToLogFile -logfile $logfile -Message $message -Type $type
-            # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
-            $shell = New-Object -ComObject Shell.Application
-            # Define the destination folder path
-            $destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
-            # Create the destination folder if it doesn't exist
-            $message = "Checking if SCUT folder already exists"
-            $type = "INFO"
-            Write-Host $message
-            AppendToLogFile -logfile $logfile -Message $message -Type $type
-            if (-not (Test-Path $destinationFolderPathSCUTWS)) {
-				New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
-                $message = "Creating SCUT folder"
-                $type = "INFO"
-                Write-Host $message
-                AppendToLogFile -logfile $logfile -Message $message -Type $type
-            }
-            # Get the zip folder and destination folder objects
-            $zipFolder = $shell.NameSpace($downloadPathSCUTWS)
-            $destinationFolderSCUTWS = $shell.NameSpace($destinationFolderPathSCUTWS)
-			# Check if the destination folder object is not null
-            if ($destinationFolderSCUTWS -ne $null) {
-                # Copy the items from the zip folder to the destination folder
-                $destinationFolderSCUTWS.CopyHere($zipFolder.Items(), 16)
-                # Run SCUT program to remove WS
-                $programPathSCUTWS = "$env:TEMP\SCUTWS\DSA_CUT.exe"
-                #Build the command
-                $command = "$programPathSCUTWS -F -C"
-                # Check if the program exists in the destination folder
-                if (Test-Path $programPathSCUTWS) {
-                $message = "Running SCUT located at: $programPathSCUTWS"
-                $type = "INFO"
-                Write-Host $message
-                AppendToLogFile -logfile $logfile -Message $message -Type $type
-                Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
-                $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-                $process.WaitForExit()
-                # Check the exit code of the process
-                if ($process.ExitCode -eq 0) {
-                    $message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
-                    $type = "INFO"
-                    Write-Host $message
-                    AppendToLogFile -logfile $logfile -Message $message -Type $type
-                    $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
-                } else {
-                    $message = "Command failed with exit code $($process.ExitCode)."
-                    $type = "ERROR"
-                    Write-Host $message
-                    AppendToLogFile -logfile $logfile -Message $message -Type $type
-                }
-			} else {
-                $message = "Error: Workload Security CUT tool not found at $programPathSCUTWS"
-                $type = "ERROR"
-                Write-Host $message
-                AppendToLogFile -logfile $logfile -Message $message -Type $type
-            }
-        } else {
-            $message = "Error: Destination folder not accessible"
-            $type = "ERROR"
-            Write-Host $message
-            AppendToLogFile -logfile $logfile -Message $message -Type $type
-        }
-    } else {
-    $message =  "Error: Failed to download Workload Security CUT from $urlSCUTWS"
-    $type = "ERROR"
-    Write-Host $message
-    AppendToLogFile -logfile $logfile -Message $message -Type $type
-    }
+        		# Check if the file was downloaded successfully
+        		if (Test-Path $downloadPathSCUTWS) {
+				$message = "Program SCUT for Workload Security downloaded successfully."
+				$type = "INFO"
+				Write-Host $message
+				AppendToLogFile -logfile $logfile -Message $message -Type $type
+            			$message = "Running the program SCUT for Workload Security ..."
+				$type = "INFO"
+				Write-Host $message
+				AppendToLogFile -logfile $logfile -Message $message -Type $type
+            			# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
+            			$shell = New-Object -ComObject Shell.Application
+            			# Define the destination folder path
+            			$destinationFolderPathSCUTWS = "$env:TEMP\SCUTWS"
+            			# Create the destination folder if it doesn't exist
+            			$message = "Checking if SCUT folder already exists"
+            			$type = "INFO"
+            			Write-Host $message
+            			AppendToLogFile -logfile $logfile -Message $message -Type $type
+            			if (-not (Test-Path $destinationFolderPathSCUTWS)) {
+					New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
+                			$message = "Creating SCUT folder"
+                			$type = "INFO"
+                			Write-Host $message
+                			AppendToLogFile -logfile $logfile -Message $message -Type $type
+		            	} else {
+				 	$message = "Found SCUTWS folder"
+			    		$type = "INFO"
+		     	    		Write-Host $message
+			    		AppendToLogFile -logfile $logfile -Message $message -Type $type
+		      		}
+            			# Get the zip folder and destination folder objects
+            			$zipFolder = $shell.NameSpace($downloadPathSCUTWS)
+            			$destinationFolderSCUTWS = $shell.NameSpace($destinationFolderPathSCUTWS)
+				# Check if the destination folder object is not null
+            			if ($destinationFolderSCUTWS -ne $null) {
+                			# Copy the items from the zip folder to the destination folder
+                			$destinationFolderSCUTWS.CopyHere($zipFolder.Items(), 16)
+                			# Run SCUT program to remove WS
+                			$programPathSCUTWS = "$env:TEMP\SCUTWS\DSA_CUT.exe"
+                			#Build the command
+                			$command = "$programPathSCUTWS -F -C"
+                			# Check if the program exists in the destination folder
+                			if (Test-Path $programPathSCUTWS) {
+                				$message = "Running SCUT located at: $programPathSCUTWS"
+                				$type = "INFO"
+                				Write-Host $message
+                				AppendToLogFile -logfile $logfile -Message $message -Type $type
+                				Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
+                				$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
+                				$process.WaitForExit()
+                				# Check the exit code of the process
+                				if ($process.ExitCode -eq 0) {
+                    					$message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
+                    					$type = "INFO"
+                    					Write-Host $message
+                    					AppendToLogFile -logfile $logfile -Message $message -Type $type
+                    					$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+                				} else {
+                    					$message = "Command failed with exit code $($process.ExitCode)."
+                    					$type = "ERROR"
+                    					Write-Host $message
+                    					AppendToLogFile -logfile $logfile -Message $message -Type $type
+               					}
+					} else {
+                				$message = "Error: Workload Security CUT tool not found at $programPathSCUTWS"
+                				$type = "ERROR"
+                				Write-Host $message
+                				AppendToLogFile -logfile $logfile -Message $message -Type $type
+            				}
+				} else {
+            				$message = "Error: Destination folder not accessible"
+            				$type = "ERROR"
+            				Write-Host $message
+            				AppendToLogFile -logfile $logfile -Message $message -Type $type
+        			}
+    			} else {
+    				$message =  "Error: Failed to download Workload Security CUT from $urlSCUTWS"
+    				$type = "ERROR"
+    				Write-Host $message
+    				AppendToLogFile -logfile $logfile -Message $message -Type $type
+    			}
+		} else {
+			$message = "Trend Micro Deep Security Agent is not installed."
+    			$type = "INFO"
+    			Write-Host $message
+    			AppendToLogFile -logfile $logfile -Message $message -Type $type    
+		}
+      }
 } else {
-	$message = "Trend Micro Deep Security Agent is not installed."
-    $type = "INFO"
-    Write-Host $message
-    AppendToLogFile -logfile $logfile -Message $message -Type $type    
+	$message = "Trend Micro Deep Security/Workload Security Agent is not installed."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 }
-
 # End Check if Workload Security is installed
 
 
