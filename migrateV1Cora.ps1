@@ -233,9 +233,7 @@ if ($apexOne -ne $null) {
 		    			$type = "INFO"
 	     	    			Write-Host $message
 		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
-		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-		                    	$process.WaitForExit()
-	                    
+		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru -Wait
 		                    	# Check the exit code of the process
 		                    	if ($process.ExitCode -eq 0) {
 		                        	$message = "Apex One removed successfully."
@@ -390,8 +388,7 @@ if ($officeScan -ne $null) {
 		    			$type = "INFO"
 	    	    			Write-Host $message
 	    				AppendToLogFile -logfile $logfile -Message $message -Type $type             	
-		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-		                    	$process.WaitForExit()
+		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru -Wait
 		                    
 		                    	# Check the exit code of the process
 		                   	if ($process.ExitCode -eq 0) {
@@ -525,8 +522,7 @@ if ($deepSecurity -ne $null) {
                         Write-Host $message
                         AppendToLogFile -logfile $logfile -Message $message -Type $type
                         Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
-                        $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
-                        $process.WaitForExit()
+                        $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru -Wait
                         # Check the exit code of the process
                         if ($process.ExitCode -eq 0) {
                             $message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
@@ -629,8 +625,7 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 			    	$type = "INFO"
 			    	Write-Host $message
 			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
-		                $process = Start-Process -FilePath $programPath
-				$process.WaitForExit()
+		                $process = Start-Process -FilePath $programPath -Wait
 		        } else {
 		  	      	$message = "Error: Program not found at $programPath"
 			    	$type = "ERROR"
