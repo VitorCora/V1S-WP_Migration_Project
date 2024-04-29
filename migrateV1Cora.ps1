@@ -29,6 +29,9 @@ $downloadPathSCUTA1 = "$env:TEMP\SCUTA1.zip"
 
 $downloadPathSCUTWS = "$env:TEMP\SCUTWS.zip"
 
+# Error variable
+$e=0
+
 # Force PowerShell to use TLS 1.2
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
@@ -83,26 +86,35 @@ if (Test-Path $logfile) {
 }
 
 function AppendToLogFile {
-    param(
-        [string]$logfile,
-        [string]$message,
-        [string]$type
-    )
+    	param(
+        	[string]$logfile,
+        	[string]$message,
+        	[string]$type
+    	)
+	# Get the current timestamp
+	$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-    # Get the current timestamp
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+	# Construct the log entry
+	$logentry = "$type: $timestamp message: $message"
 
-    # Construct the log entry
-    $logentry = "$type: $timestamp "message: $message""
+	$retryCount = 0
 
-    try {
-        # Append the log entry to the log file
-        Add-Content -Path $logfile -Value $LogEntry -ErrorAction Stop
-        Write-Host "Log entry appended successfully to $logfile"
-    }
-    catch {
-        Write-Host "Failed to append log entry to $logfile. Error: $_"
-    }
+	while ($retryCount -lt 10) {
+		try {
+			# Append the log entry to the log file
+	            	Add-Content -Path $logfile -Value $logentry -ErrorAction Stop
+	            	Write-Host "Log entry appended successfully to $logfile"
+	            	return  # Exit the function if successful
+	        	}
+	        catch {
+	        	$retryCount++
+	            	Write-Host "Attempt $retryCount: Failed to append log entry to $logfile. Error: $_"
+	            	Start-Sleep -Seconds 5  # Wait for 5 seconds before retrying
+	        }
+	}
+	
+	# If execution reaches this point, it means all retries failed
+	Write-Host "Exceeded maximum retry attempts. Failed to append log entry to $logfile."
 }
 
 
@@ -113,7 +125,6 @@ $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*T
 
 $message = "Looking for Trend Micro Apex One Security Agent."
 $type = "INFO"
-
 Write-Host $message
 AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
@@ -279,7 +290,7 @@ Write-Host $message
 AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 
 if ($officeScan -ne $null) {
-	$message "Trend Micro OfficeScan Agent found."
+	$message = "Trend Micro OfficeScan Agent found."
      	$type = "INFO"
     	Write-Host $message
     	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
@@ -475,7 +486,7 @@ if ($deepSecurity -ne $null) {
 	        
 	        # Check if the file was downloaded successfully
 	        if (Test-Path $downloadPathSCUTWS) {
-			message = "Program SCUT for Workload Security downloaded successfully."
+			$message = "Program SCUT for Workload Security downloaded successfully."
 			$type = "INFO"
 			Write-Host $message
 			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
