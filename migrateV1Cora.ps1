@@ -54,11 +54,11 @@ if (-not (Test-Path $folderPath)) {
 # Create the log file
 
 # Specify the file path
-$logfileName = "v1migrationtool.txt"
+$logfileName = "v1migrationtool"
 $timestamp = Get-Date -Format "yyMMdd_HHmmss"
 
 # Construct the full file path
-$logfile = Join-Path -Path $folderPath -ChildPath ($logfileName + "_" + $timestamp)
+$logfile = Join-Path -Path $folderPath -ChildPath ($logfileName + "_" + $timestamp +".txt")
 
 # Create a StreamWriter object to write to the file
 $streamWriter = New-Object System.IO.StreamWriter($logfile)
