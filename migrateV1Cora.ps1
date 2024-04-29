@@ -658,10 +658,16 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 function Check-DeepSecurityInstalled {
     $service = Get-Service "ds_agent"
     if ($service -ne $null) {
-        Write-Host "Trend Micro Deep Security is installed."
+	$message = "Info: Trend Micro Deep Security is installed."
+    	$type = INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
         return $true
     } else {
-        Write-Host "Trend Micro Deep Security is not installed."
+	$message = "Error: Trend Micro Deep Security is not installed."
+    	$type = "ERROR"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
         return $false
     }
 }
@@ -676,21 +682,35 @@ $wstime = 30
 
 # Loop until Deep Security is installed or timeout is reached
 while ((-not (Check-DeepSecurityInstalled)) -and (Get-Date) -lt $timeout) {
-    $n=$n+1
-    $wstime = $t*$n
-    Write-Host "Waiting for Trend Micro Deep Security to be installed for $wstime ..."
-    Start-Sleep -Seconds 30  # Wait for 30 seconds before checking again
+	$n=$n+1
+	$wstime = $t*$n
+	$message = "Info: Waiting for Trend Micro Deep Security to be installed for $wstime ..."
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	Start-Sleep -Seconds 30  # Wait for 30 seconds before checking again
 }
 
 if ((Get-Date) -ge $timeout) {
-    Write-Host "Timed out waiting for Trend Micro Deep Security to be installed."
+     	$message = "Error: Timed out waiting for Trend Micro Deep Security to be installed."
+    	$type = "ERROR"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
 } else {
-    # Change directory to C:\Program Files\Trend Micro\Deep Security
+    	# Change directory to C:\Program Files\Trend Micro\Deep Security
 	Set-Location "C:\Program Files\Trend Micro\Deep Security Agent"
 
 	# Reset the manager
-    & .\dsa_control -r
+ 	$message = "Info: Reseting the manager"
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	& .\dsa_control -r
     
-    # Activate to the manager
-    & .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
+    	# Activate to the manager
+ 	$message = "Info: Activating Vision One Server & Workload Protection"
+    	$type = "INFO"
+    	Write-Host $message
+    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	& .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
 }
