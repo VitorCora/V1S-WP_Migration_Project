@@ -126,13 +126,13 @@ $apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*T
 $message = "Looking for Trend Micro Apex One Security Agent."
 $type = "INFO"
 Write-Host $message
-AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 if ($apexOne -ne $null) {
 	$message = "Trend Micro Apex one Agent found."
 	$type = "INFO"
 	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	AppendToLogFile -logfile $logfile -Message $message -Type $type
 
     	# Uninstall Trend Micro Apex One Security Agent
     	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro Apex One Security Agent*" } | Select-Object -ExpandProperty UninstallString
@@ -140,28 +140,28 @@ if ($apexOne -ne $null) {
         	$message = "Uninstalling Trend Micro Apex One Security Agent using command line..."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
         	Start-Process -FilePath $uninstallString -Wait
         	$message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
         	$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 		$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
   		if ($apexOne -eq $null){
 	    		$message = "Trend Micro Apex One Security Agent has been uninstalled."
 	        	$type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
    		}
     	} else {
         	$message =  "Failed to find uninstall string for Trend Micro Apex One Security Agent."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
         	$message =  "Initiating the uninstallation process of the Apex One, using the SCUT tool A1"
     		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
  
         	# Create a WebClient object
         	$webClient = New-Object System.Net.WebClient
@@ -171,18 +171,18 @@ if ($apexOne -ne $null) {
         	$message =  "Initiating the download of the SCUT tool A1"
     		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
  
         	# Check if the file was downloaded successfully
         	if (Test-Path $downloadPathSCUTA1) {
 			$message =  "Program SCUT for Apex One downloaded successfully."
     			$type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
             		$message = "Running the program SCUT for Apex One ..."
 	    		$type = "INFO"
      	    		Write-Host $message
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    		AppendToLogFile -logfile $logfile -Message $message -Type $type
         
         		# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
         		$shell = New-Object -ComObject Shell.Application
@@ -194,18 +194,18 @@ if ($apexOne -ne $null) {
 	     		$message = "Checking if SCUTA1 folder already exists"
 	    		$type = "INFO"
      	    		Write-Host $message
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    		AppendToLogFile -logfile $logfile -Message $message -Type $type
             		if (-not (Test-Path $destinationFolderPathSCUTA1)) {
                 		New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
 		 		$message = "Creating SCUTA1 folder"
 	    			$type = "INFO"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	            	} else {
 			 	$message = "Found SCUTA1 folder"
 		    		$type = "INFO"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	      		}
             
 	            	# Get the zip folder and destination folder objects
@@ -222,7 +222,7 @@ if ($apexOne -ne $null) {
 	
 				$message = "Running command $programPathSCUTA1 -noinstall -dbg"
 		    		$type = "INFO"
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	 
 	                	#Build the command
 	                	$command = "$programPathSCUTA1 -noinstall -dbg"
@@ -232,7 +232,7 @@ if ($apexOne -ne $null) {
 		                    	$message = "Running SCUT Apex One located at: $programPathSCUTA1"
 		    			$type = "INFO"
 	     	    			Write-Host $message
-		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
 		                    	$process.WaitForExit()
 	                    
@@ -241,32 +241,32 @@ if ($apexOne -ne $null) {
 		                        	$message = "Apex One removed successfully."
 				  	    	$type = "INFO"
 	     	    				Write-Host $message
-		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    				AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                        	$apexOne = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Apex One Security Agent*" }
 		                    	} else {
 		                        	$message = "Command failed with exit code $($process.ExitCode)."
 				  		$type = "ERROR"
 	     	    				Write-Host $message
-		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    				AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                    	}
 	
 	                	} else {
 	                    		$message = "Error: Apex One SCUT Tool not found at $programPathSCUTA1"
 			      		$type = "ERROR"
 	     	    			Write-Host $message
-		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	                	}
 	            	} else {
 	                	$message =  "Error: Destination folder not accessible."
 			 	$type = "ERROR"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	            	}
 	        } else {
 	    		$message = "Error: Failed to download the Apex One SCUT Tool from $urlSCUTA1"
 	      		$type = "ERROR"
 	     	    	Write-Host $message
-		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 	
 	    	}
       }
@@ -274,7 +274,7 @@ if ($apexOne -ne $null) {
 	$message = "Trend Micro Apex One Security Agent is not installed."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 }
    
 # End Check if Apex One is installed
@@ -287,13 +287,13 @@ $officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like 
 $message = "Looking for Trend Micro OfficeScan Client."
 $type = "INFO"
 Write-Host $message
-AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 if ($officeScan -ne $null) {
 	$message = "Trend Micro OfficeScan Agent found."
      	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 	# Uninstall Trend Micro OfficeScan Security Agent
 	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro OfficeScan Client*" } | Select-Object -ExpandProperty UninstallString
@@ -301,28 +301,28 @@ if ($officeScan -ne $null) {
 	        $message = "Uninstalling Trend Micro OfficeScan Client via command line..."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	        Start-Process -FilePath $uninstallString -Wait
 	        $message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
 	        $type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
         	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
 	 	if ($officeScan -eq $null){
 	  	        $message = "Trend Micro OfficeScan Client has been uninstalled."
 		        $type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
    		}
    	} else {
        		$message =  "Failed to find uninstall string for Trend Micro OfficeScan Client."
 		$type = "ERROR"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 		$message =  "Initiating the uninstallation process of the OfficeScan, using the SCUT tool"
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
     
         	# Create a WebClient object
         	$webClient = New-Object System.Net.WebClient
@@ -332,18 +332,18 @@ if ($officeScan -ne $null) {
 		$message =  "Initiating the download of the SCUT tool A1"
   		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
         
         	# Check if the file was downloaded successfully
 	        if (Test-Path $downloadPathSCUTA1) {
 		  	$message =  "Program SCUT for OfficeScan downloaded successfully."
 	    		$type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	            	$message = "Running the program SCUT for OfficeScan ..."
 	   		$type = "INFO"
 	     		Write-Host $message
-		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type      	
+		    	AppendToLogFile -logfile $logfile -Message $message -Type $type      	
 		        
 	           	# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
 		    	$shell = New-Object -ComObject Shell.Application
@@ -355,18 +355,18 @@ if ($officeScan -ne $null) {
 	  	     	$message = "Checking if SCUTA1 folder already exists"
 		    	$type = "INFO"
 	     	    	Write-Host $message
-		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 		        if (-not (Test-Path $destinationFolderPathSCUTA1)) {
 		                New-Item -ItemType Directory -Path $destinationFolderPathSCUTA1 | Out-Null
 		  		 $message = "Creating SCUTA1 folder"
 		    		$type = "INFO"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	            	} else {
 			 	$message = "Found SCUTA1 folder"
 		    		$type = "INFO"
 	  	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	     		}
             
 	           	# Get the zip folder and destination folder objects
@@ -389,7 +389,7 @@ if ($officeScan -ne $null) {
 			                $message = "Running SCUT Apex One located at: $programPathSCUTA1"
 		    			$type = "INFO"
 	    	    			Write-Host $message
-	    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type             	
+	    				AppendToLogFile -logfile $logfile -Message $message -Type $type             	
 		                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
 		                    	$process.WaitForExit()
 		                    
@@ -398,39 +398,39 @@ if ($officeScan -ne $null) {
 			   	                $message = "OfficeScan removed successfully."
 			  	    		$type = "INFO"
 	     	    				Write-Host $message
-		    				AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    				AppendToLogFile -logfile $logfile -Message $message -Type $type
 			                	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
 			            	} else {
 			       	               $message = "Command failed with exit code $($process.ExitCode)."
 				  		$type = "ERROR"
 	   	    				Write-Host $message
-	    					AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    					AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                    	}
                     			#Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs Administrator
 	                	} else {
 	                    		$message = "Error: OfficeScan SCUT Tool not found at $programPathSCUTA1"
 			      		$type = "ERROR"
 	     	    			Write-Host $message
-		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	                	}
 			} else {
 	                	$message =  "Error: Destination folder not accessible."
 			 	$type = "ERROR"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	    		}
 	        } else {
 	    		$message = "Error: Failed to download the OfficeScan SCUT Tool from $urlSCUTA1"
 	   		$type = "ERROR"
 		    	Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
 		}
 	}
 } else {
 	$message = "Trend Micro OfficeScan Client is not installed."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 }
    
 # End Check if OfficeScan is installed
@@ -442,17 +442,17 @@ $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -lik
 $message = "Looking for Trend Micro Deep Security Agent."
 $type = "INFO"
 Write-Host $message
-AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 if ($deepSecurity -ne $null) {
 	$message = "Trend Micro Deep Security/Workload Security Agent found."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 	$message = "Verifying if the Trend Micro Deep Security/Workload Security Agent has been uninstalled correctly."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type    
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type    
     	# Uninstall Trend Micro Deep Security Agent
     	$uninstallResult = $deepSecurity.Uninstall() -Wait
 
@@ -460,23 +460,23 @@ if ($deepSecurity -ne $null) {
 		$message = "Trend Micro Deep Security/Workload Security Agent has been uninstalled."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	        $deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
     	} else {
 		$message = "Failed to uninstall Trend Micro Deep Security Agent. Return code: $($uninstallResult.ReturnValue)"
 		$type = "ERROR"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 	        # If password protection is ON, we will try using the SCUT tool next
 		$message = "Failed to uninstall probably due to Agent Self protection. Next Try will be using SCUT WS tool"
 		$type = "ERROR"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 		$message = "Initiating the uninstallation process of the $programName, using the SCUT tool"
 		$type = "ERROR"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	
 	        # Create a WebClient object
 	        $webClient = New-Object System.Net.WebClient
@@ -489,11 +489,11 @@ if ($deepSecurity -ne $null) {
 			$message = "Program SCUT for Workload Security downloaded successfully."
 			$type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	  		$message = "Running the program SCUT for Workload Security ..."
 			$type = "INFO"
 			Write-Host $message
-			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	        
 	           	# Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
 	            	$shell = New-Object -ComObject Shell.Application
@@ -505,13 +505,13 @@ if ($deepSecurity -ne $null) {
 		        $message = "Checking if SCUT folder already exists"
 	    		$type = "INFO"
      	    		Write-Host $message
-	    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	  		if (-not (Test-Path $destinationFolderPathSCUTWS)) {
 				New-Item -ItemType Directory -Path $destinationFolderPathSCUTWS | Out-Null
     		 		$message = "Creating SCUT folder"
 	    			$type = "INFO"
 	     	    		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 		        }
 	            
 		        # Get the zip folder and destination folder objects
@@ -534,7 +534,7 @@ if ($deepSecurity -ne $null) {
 			 	$message = "Running SCUT located at: $programPathSCUTWS"
 			    	$type = "INFO"
 		     		Write-Host $message
-		    		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	                    	Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
 	                    	$process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru
 	                   	$process.WaitForExit()
@@ -544,37 +544,37 @@ if ($deepSecurity -ne $null) {
 		      		        $message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
 				      	$type = "INFO"
 	     	    			Write-Host $message
-		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	                        	$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
 	                    	} else {
 		                        $message = "Command failed with exit code $($process.ExitCode)."
 				  	$type = "ERROR"
 	     	    			Write-Host $message
-		    			AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    			AppendToLogFile -logfile $logfile -Message $message -Type $type
 	                    	}
 			} else {
 		        	$message = "Error: Workload Security CUT tool not found at $programPathSCUTWS"
 		      		$type = "ERROR"
 	       			Write-Host $message
-			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
                 	}
             	} else {
 	        	$message = "Error: Destination folder not accessible"
 	      		$type = "ERROR"
        			Write-Host $message
-		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    	AppendToLogFile -logfile $logfile -Message $message -Type $type
             	}
         } else {
   		$message =  "Error: Failed to download Workload Security CUT from $urlSCUTWS"
 	      	$type = "ERROR"
 	    	Write-Host $message
-	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    	AppendToLogFile -logfile $logfile -Message $message -Type $type
        	}
 } else {
 	$message = "Trend Micro Deep Security Agent is not installed."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type    
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type    
 }
 
 # End Check if Workload Security is installed
@@ -583,7 +583,7 @@ if ($deepSecurity -ne $null) {
 $message = "Finished looking for older versions installed on the host."
 $type = "INFO"
 Write-Host $message
-AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 # Logic to Install Basecamp agent
 
@@ -591,7 +591,7 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 	$message = "Starting Installation process of the Trend Micro Basecamp Agent"
 	$type = "INFO"
 	Write-Host $message
-	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	AppendToLogFile -logfile $logfile -Message $message -Type $type
  	# Create a WebClient object
 	$webClient = New-Object System.Net.WebClient
 	    
@@ -603,11 +603,11 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 	  	$message = "Trend Micro Basecamp Agent downloaded successfully."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	 	$message = "Running the Trend Micro Basecamp Agent..."
 		$type = "INFO"
 		Write-Host $message
-		AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		AppendToLogFile -logfile $logfile -Message $message -Type $type
     
 	        # Extract the downloaded file using Shell.Application (compatible with PowerShell v1)
 	        $shell = New-Object -ComObject Shell.Application
@@ -637,32 +637,32 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 		  		$message = "Running the program located at: $programPath"
 			    	$type = "INFO"
 			    	Write-Host $message
-			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                $process = Start-Process -FilePath $programPath
 				$process.WaitForExit()
 		        } else {
 		  	      	$message = "Error: Program not found at $programPath"
 			    	$type = "ERROR"
 			    	Write-Host $message
-			    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
             		}
         	} else {
 	      	  	$message = "Error: Destination folder not accessible."
 		    	$type = "ERROR"
 		    	Write-Host $message
-		    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+		    	AppendToLogFile -logfile $logfile -Message $message -Type $type
         	}
 	} else {
 	  	$message = "Error: Failed to download Trend Micro Basecamp the program from $urlagent"
 	    	$type = "ERROR"
 	    	Write-Host $message
-	    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+	    	AppendToLogFile -logfile $logfile -Message $message -Type $type
     	}
 } else {
  	$message = "Error: Failed to Install Basecamp because Workload Security or Apex One are installed on the target machine"
     	$type = "ERROR"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 }
 
 # Check if Trend Micro Deep Security service is installed
@@ -672,13 +672,13 @@ function Check-DeepSecurityInstalled {
 	$message = "Info: Trend Micro Deep Security is installed."
     	$type = INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
         return $true
     } else {
 	$message = "Error: Trend Micro Deep Security is not installed."
     	$type = "ERROR"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
         return $false
     }
 }
@@ -698,7 +698,7 @@ while ((-not (Check-DeepSecurityInstalled)) -and (Get-Date) -lt $timeout) {
 	$message = "Info: Waiting for Trend Micro Deep Security to be installed for $wstime ..."
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
     	Start-Sleep -Seconds 30  # Wait for 30 seconds before checking again
 }
 
@@ -706,7 +706,7 @@ if ((Get-Date) -ge $timeout) {
      	$message = "Error: Timed out waiting for Trend Micro Deep Security to be installed."
     	$type = "ERROR"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 } else {
     	# Change directory to C:\Program Files\Trend Micro\Deep Security
 	Set-Location "C:\Program Files\Trend Micro\Deep Security Agent"
@@ -715,13 +715,13 @@ if ((Get-Date) -ge $timeout) {
  	$message = "Info: Reseting the manager"
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
     	& .\dsa_control -r
     
     	# Activate to the manager
  	$message = "Info: Activating Vision One Server & Workload Protection"
     	$type = "INFO"
     	Write-Host $message
-    	AppendToLogFile -LogFilePath $logfile -Message $message -Type $type
+    	AppendToLogFile -logfile $logfile -Message $message -Type $type
     	& .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
 }
