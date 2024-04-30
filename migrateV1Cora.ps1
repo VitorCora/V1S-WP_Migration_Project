@@ -523,8 +523,9 @@ if ($deepSecurity -ne $null) {
                         AppendToLogFile -logfile $logfile -Message $message -Type $type
                         Write-Host "Running SCUT Workload Security located at: $programPathSCUTWS"
                         $process = Start-Process -FilePath "cmd.exe" -ArgumentList "/c $command" -Verb RunAs -PassThru -Wait
+			$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
                         # Check the exit code of the process
-                        if ($process.ExitCode -eq 0) {
+                        if ($process.ExitCode -eq 0 -or $deepSecurity -eq $null) {
                             $message = "Trend Micro Deep Security/Workload Security Agent removed successfully."
                             Write-Host $message
                             AppendToLogFile -logfile $logfile -Message $message -Type $type
