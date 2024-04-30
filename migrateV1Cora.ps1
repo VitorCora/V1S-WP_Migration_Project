@@ -85,6 +85,8 @@ if (Test-Path $logfile) {
     Write-Host "Failed to create the log file."
 }
 
+# Define Sub functions
+
 function AppendToLogFile {
     	param(
         	[string]$logfile,
@@ -117,6 +119,35 @@ function AppendToLogFile {
 	Write-Host "Exceeded maximum retry attempts. Failed to append log entry to $logfile."
 }
 
+# Check if Trend Micro Deep Security service is installed
+function Check-DeepSecurityInstalled {
+    try {
+        $deepSecurity = Get-CimInstance -ClassName Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+        if ($deepSecurity -ne $null) {
+            $message = "Info: Trend Micro Deep Security is installed."
+            $type = "INFO"
+        } else {
+            $message = "Error: Trend Micro Deep Security is not installed."
+            $type = "ERROR"
+        }
+    }
+    catch {
+        $message = "Error: An error occurred while checking Deep Security installation - $_"
+        $type = "ERROR"
+    }
+
+    Write-Output $message
+    # Assuming AppendToLogFile is defined elsewhere in your script
+    AppendToLogFile -logfile $logfile -Message $message -Type $type
+
+    if ($type -eq "INFO") {
+        return $true
+    } else {
+        return $false
+    }
+}
+
+# Main program
 
 # Start Check if Apex One is installed
 
@@ -627,6 +658,11 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
 			    	Write-Host $message
 			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 		                $process = Start-Process -FilePath $programPath -Wait
+		  		$deepSecurity = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro Deep Security Agent*" }
+      				$message = "Trend Micro Basecamp Agent installed successfully"
+			    	$type = "INFO"
+			    	Write-Host $message
+			    	AppendToLogFile -logfile $logfile -Message $message -Type $type
 		        } else {
 		  	      	$message = "Error: Program not found at $programPath"
 			    	$type = "ERROR"
@@ -650,24 +686,6 @@ if ($deepSecurity -eq $null -and $apexOne -eq $null -and $officeScan -eq $null) 
     	$type = "ERROR"
     	Write-Host $message
     	AppendToLogFile -logfile $logfile -Message $message -Type $type
-}
-
-# Check if Trend Micro Deep Security service is installed
-function Check-DeepSecurityInstalled {
-    $service = Get-Service "ds_agent"
-    if ($service -ne $null) {
-	$message = "Info: Trend Micro Deep Security is installed."
-    	$type = INFO"
-    	Write-Host $message
-    	AppendToLogFile -logfile $logfile -Message $message -Type $type
-        return $true
-    } else {
-	$message = "Error: Trend Micro Deep Security is not installed."
-    	$type = "ERROR"
-    	Write-Host $message
-    	AppendToLogFile -logfile $logfile -Message $message -Type $type
-        return $false
-    }
 }
 
 # Set timeout to 15 minutes
