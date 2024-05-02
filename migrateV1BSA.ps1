@@ -13,7 +13,7 @@ if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
 # Define variables
 
 # Define the URL from which to download the Basecamp agent
-$urlagent = "https://windowss3csa.s3.us-east-2.amazonaws.com/TMServerAgent_Windows_CSA.zip"
+$urlagent = "https://bsaal-package.s3.amazonaws.com/TMServerAgent_Windows_New.zip"
 
 
 # Define the URL from which to download the SCUT uninstalling tool for Apex One
@@ -728,5 +728,5 @@ if ((Get-Date) -ge $timeout) {
     	$type = "INFO"
     	Write-Host $message
     	AppendToLogFile -logfile $logfile -Message $message -Type $type
-    	& .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:6FA36C87-B9F7-867C-69AF-5879414942EA" "token:114696AE-DA74-8623-FFD0-BA8BD59FC128"
+    	& .\dsa_control -a dsm://agents.deepsecurity.trendmicro.com:443/ "tenantID:4C3BEE19-30BE-1462-0592-E87BBE883E09" "token:86CB9039-0C76-F8FC-3BF6-3C74D01B1069"
 }
