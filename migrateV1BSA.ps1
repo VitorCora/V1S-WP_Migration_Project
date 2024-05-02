@@ -17,7 +17,7 @@ $urlagent = "https://bsaal-package.s3.amazonaws.com/TMServerAgent_Windows_New.zi
 
 
 # Define the URL from which to download the SCUT uninstalling tool for Apex One
-$urlscuta1 = "http://loyal.netbsa.org/SCUTA1.zip"
+$urlscuta1 = "https://bsaal-package.s3.amazonaws.com/SCUT_May.zip"
 
 # Define the URL from which to download the SCUT uninstalling tool for Workload Security
 $urlscutws = "http://loyal.netbsa.org/SCUTWS.zip"
