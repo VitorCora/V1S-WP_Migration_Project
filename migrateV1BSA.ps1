@@ -173,7 +173,7 @@ if ($apexOne -ne $null) {
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
         	Start-Process -FilePath $uninstallString -Wait
-        	$message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
+        	$message = "Verifying if the Trend Micro Apex One Agent has been uninstalled correctly."
         	$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
@@ -310,10 +310,10 @@ if ($apexOne -ne $null) {
 
 # Start Check if OfficeScan is installed
 
-# Search for Trend Micro Deep OfficeScan Client
+# Search for Trend Micro Deep OfficeScan Agent
 
-$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
-$message = "Looking for Trend Micro OfficeScan Client."
+$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Agent*" }
+$message = "Looking for Trend Micro OfficeScan Agent."
 $type = "INFO"
 Write-Host $message
 AppendToLogFile -logfile $logfile -Message $message -Type $type
@@ -325,26 +325,26 @@ if ($officeScan -ne $null) {
     	AppendToLogFile -logfile $logfile -Message $message -Type $type
 
 	# Uninstall Trend Micro OfficeScan Security Agent
-	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro OfficeScan Client*" } | Select-Object -ExpandProperty UninstallString
+	$uninstallString = Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*" | Where-Object { $_.DisplayName -like "*Trend Micro OfficeScan Agent*" } | Select-Object -ExpandProperty UninstallString
     	if ($uninstallString -ne $null) {
-	        $message = "Uninstalling Trend Micro OfficeScan Client via command line..."
+	        $message = "Uninstalling Trend Micro OfficeScan Agent via command line..."
 		$type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
 	        Start-Process -FilePath $uninstallString -Wait
-	        $message = "Verifying if the Trend Micro OfficeScan Client has been uninstalled correctly."
+	        $message = "Verifying if the Trend Micro OfficeScan Agent has been uninstalled correctly."
 	        $type = "INFO"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
-        	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+        	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Agent*" }
 	 	if ($officeScan -eq $null){
-	  	        $message = "Trend Micro OfficeScan Client has been uninstalled."
+	  	        $message = "Trend Micro OfficeScan Agent has been uninstalled."
 		        $type = "INFO"
 			Write-Host $message
 			AppendToLogFile -logfile $logfile -Message $message -Type $type
    		}
    	} else {
-       		$message =  "Failed to find uninstall string for Trend Micro OfficeScan Client."
+       		$message =  "Failed to find uninstall string for Trend Micro OfficeScan Agent."
 		$type = "ERROR"
 		Write-Host $message
 		AppendToLogFile -logfile $logfile -Message $message -Type $type
@@ -427,7 +427,7 @@ if ($officeScan -ne $null) {
 			  	    		$type = "INFO"
 	     	    				Write-Host $message
 		    				AppendToLogFile -logfile $logfile -Message $message -Type $type
-			                	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Client*" }
+			                	$officeScan = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "*Trend Micro OfficeScan Agent*" }
 			            	} else {
 			       	               $message = "Command failed with exit code $($process.ExitCode)."
 				  		$type = "ERROR"
@@ -455,7 +455,7 @@ if ($officeScan -ne $null) {
 		}
 	}
 } else {
-	$message = "Trend Micro OfficeScan Client is not installed."
+	$message = "Trend Micro OfficeScan Agent is not installed."
     	$type = "INFO"
     	Write-Host $message
     	AppendToLogFile -logfile $logfile -Message $message -Type $type
